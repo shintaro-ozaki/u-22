@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'donate.dart';
 
 void main() {
   runApp(const MyApp());
@@ -60,10 +61,21 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) =>
+                  DonatePage(), // DonatePage は donate.dart ファイル内の適切なクラス名に置き換えてください
+            ),
+          );
+        },
+        child: const Icon(Icons.add), // ボタンのアイコンを設定
       ),
     );
   }
