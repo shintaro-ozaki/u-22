@@ -70,12 +70,11 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) =>
-                  DonatePage(), // DonatePage は donate.dart ファイル内の適切なクラス名に置き換えてください
+              builder: (context) => const DonatePage(),
             ),
           );
         },
-        child: const Icon(Icons.add), // ボタンのアイコンを設定
+        child: const Icon(Icons.add),
       ),
     );
   }
