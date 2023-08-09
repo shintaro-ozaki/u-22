@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'donate.dart';
+import 'footer.dart';
+import 'settings.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,7 +10,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -18,7 +19,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'U-22 dev'),
+      home: const Scaffold(
+        body: MyHomePage(title: 'u-22 dev'),
+      ),
     );
   }
 }
@@ -32,12 +35,26 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int _selectedIndex = 0; // 追加
 
-  void _incrementCounter() {
+  void _onItemTapped(int index) {
     setState(() {
-      _counter++;
+      _selectedIndex = index;
     });
+
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const MyHomePage(title: 'u-22 dev')),
+      );
+    } else if (index == 1) {
+    } else if (index == 2) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const Settings()),
+      );
+    }
   }
 
   @override
@@ -52,30 +69,24 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'こんな感じです',
+              '募金ページは下記から',
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const DonatePage(),
+                  ),
+                );
+              },
+              child: const Text('募金する'),
             ),
           ],
         ),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) =>
-                  DonatePage(), // DonatePage は donate.dart ファイル内の適切なクラス名に置き換えてください
-            ),
-          );
-        },
-        child: const Icon(Icons.add), // ボタンのアイコンを設定
+      bottomNavigationBar: Footer(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
     );
   }

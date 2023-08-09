@@ -7,7 +7,7 @@ class DonatePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Donate Page'), // ページのタイトルを設定
+        title: const Text('Donate Page'),
       ),
       body: const Center(
         child: Text('This is the Donate Page'),
