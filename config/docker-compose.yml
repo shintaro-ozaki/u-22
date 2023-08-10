@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  container:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ${IMAGE_NAME}
+    container_name: ${CONTAINER_NAME}
+    hostname: ${HOST_NAME}
+    volumes:
+      - ~/.ssh:/home/${USER_NAME}/.ssh
+      - ../u-22:/home/${USER_NAME}
+    ports:
+      - 3000:3000
+    tty: true

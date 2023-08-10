@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'AroundSpot.dart';
 import 'donate.dart';
 import 'footer.dart';
 import 'settings.dart';
@@ -35,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _selectedIndex = 0; // 追加
+  int _selectedIndex = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -49,10 +50,14 @@ class _MyHomePageState extends State<MyHomePage> {
             builder: (context) => const MyHomePage(title: 'u-22 dev')),
       );
     } else if (index == 1) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const AroundSpotPage()),
+      );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const Settings()),
+        MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
     }
   }

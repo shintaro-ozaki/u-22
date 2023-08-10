@@ -1,18 +1,21 @@
-# u-22 contest
+# u-22 プログラミングコンテスト
 
-## When you clone this project
-you need to install Flutter package.
+Flutter 参考資料
+- [公式サイト(en)](https://docs.flutter.dev/)
+- [公式サイト(ja)](https://www.flutter-study.dev/)
 
-Run, 
-- `cd project`
-- `flutter pub get`
+# アイデア
+- 募金アプリの作成
+  - Wi-Fi接続時
+  - スポットに入ったら
 
-Then, this application will install the necessary packages.
+# 用いる
+- Flutter
+  - Dart
+- PayPayAPI
 
-## When you start
-Run, 
-- `flutter doctor`
-  - Run this to make sure there are no problems starting the emulator.
-  - Also, be sure to select the device you wish to boot.
-- `flutter run`
-  -  You can confirm that this project is running on the device
+# 疑問点
+- ポップアップはどうする?
+- どうやって位置情報を見つけ、通知を送る?
+
+
