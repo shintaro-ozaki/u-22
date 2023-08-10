@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'footer.dart';
 import 'main.dart';
-import 'AroundSpot.dart';
+import 'settings.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+class AroundSpotPage extends StatefulWidget {
+  const AroundSpotPage({Key? key}) : super(key: key);
 
   @override
-  _SettingsPageState createState() => _SettingsPageState();
+  _AroundSpotPageState createState() => _AroundSpotPageState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  int _selectedIndex = 2;
+class _AroundSpotPageState extends State<AroundSpotPage> {
+  int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -41,10 +41,10 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定画面'),
+        title: const Text('近くのスポット'),
       ),
       body: const Center(
-        child: Text('設定画面です。'),
+        child: Text('近くのスポットを表示します。'),
       ),
       bottomNavigationBar: Footer(
         currentIndex: _selectedIndex,
