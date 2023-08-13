@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'AmountProvider.dart';
 import 'AroundSpot.dart';
 import 'donate.dart';
 import 'footer.dart';
 import 'settings.dart';
-import 'test_donate.dart';
+import 'FrequencyProvider.dart';
+import 'NotifierProvider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,15 +17,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const Scaffold(
-        body: MyHomePage(title: 'ホーム'),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AmountProvider()),
+        ChangeNotifierProvider(create: (context) => FrequencyProvider()),
+        ChangeNotifierProvider(
+            create: (context) => NotificationSettingsProvider()),
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'My App',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const MyHomePage(title: 'ホーム'),
       ),
     );
   }
@@ -69,6 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final amountProvider = Provider.of<AmountProvider>(context);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -91,18 +101,10 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('募金する'),
             ),
-            const Text(
-              'スマートペイメント(dev)',
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const TestDonatePage(),
-                  ),
-                );
-              },
-              child: const Text('募金する'),
+            const SizedBox(height: 20), // Add some spacing
+            Text(
+              '現在の金額: ${amountProvider.amount} 円', // Display the current amount
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
