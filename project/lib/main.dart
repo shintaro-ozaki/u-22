@@ -86,19 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text('募金する'),
             ),
-            const Text(
-              '通知ページ(Dev)',
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const DonatePage(),
-                  ),
-                );
-              },
-              child: const Text('通知を受け取る'),
-            ),
           ],
         ),
       ),
