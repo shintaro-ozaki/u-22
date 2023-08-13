@@ -132,17 +132,17 @@ class _DonatePageState extends State<DonatePage> {
               },
               decoration: const InputDecoration(
                 labelText: '募金額を入力してください',
-                border: OutlineInputBorder(), // ボーダースタイルを追加
-                prefixText: '¥', // 通貨記号を追加
+                border: OutlineInputBorder(),
+                prefixText: '¥',
+                suffixText: '円',
               ),
             ),
-            const SizedBox(height: 100), // 間隔を設定
-
+            const SizedBox(height: 100),
             ElevatedButton(
               onPressed: donationAmount > 0 ? _onDonateButtonPressed : null,
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
-                backgroundColor: Colors.blue, // ボタンのテキスト色を設定
+                backgroundColor: Colors.blue,
               ),
               child: const Text('募金する'),
             ),
