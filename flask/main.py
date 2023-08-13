@@ -13,14 +13,19 @@ app = Flask(__name__)
 CORS(app)
 
 
+@app.route("/")
+def hello():
+    print("hello")
+    return {"message": "hello"}
+
 @app.route('/v2/codes', methods=["POST"])
 def test():
     output = {}
     data = request.get_json()
     response = client.Code.create_qr_code(data)
     output["redirectUrl"] = response['data']['url']
-    print(output)
     return jsonify(output)
 
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    # need to change address where you are located in.
+    app.run(host='127.0.0.1', port=5001, debug=True)

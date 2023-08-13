@@ -29,6 +29,7 @@ class DonatePage extends StatefulWidget {
 
 class _DonatePageState extends State<DonatePage> {
   int _selectedIndex = 0;
+  int donationAmount = 0;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -58,6 +59,7 @@ class _DonatePageState extends State<DonatePage> {
     final merchantPaymentId = generateRandomString(30);
     try {
       final response = await http.post(
+        // need to change address where you are located in.
         Uri.parse('http://127.0.0.1:5001/v2/codes'),
         headers: {
           'Content-Type': 'application/json',
@@ -65,40 +67,39 @@ class _DonatePageState extends State<DonatePage> {
         body: jsonEncode({
           "merchantPaymentId": merchantPaymentId,
           "codeType": "ORDER_QR",
-          "redirectUrl": "https://google.com",
+          // "redirectUrl": "app://main.dart",
+          // "redirectType": "APP_DEEP_LINK",
+          "redirectUrl": "",
           "redirectType": "WEB_LINK",
-          "orderDescription": "Example - Mune Cake shop",
+          "orderDescription": "募金グループへ",
           "orderItems": [
             {
-              "name": "Moon cake",
+              "name": "募金",
               "category": "pasteries",
               "quantity": 1,
               "productId": "67678",
-              "unitPrice": {"amount": 1, "currency": "JPY"},
+              "unitPrice": {"amount": donationAmount, "currency": "JPY"},
             }
           ],
-          "amount": {"amount": 1, "currency": "JPY"},
+          "amount": {"amount": donationAmount, "currency": "JPY"},
         }),
       );
 
       if (response.statusCode == 200) {
-        // 成功時の処理
-        print('寄付が成功しました');
-
         final responseBody = jsonDecode(response.body);
-        final redirectUrl =
-            responseBody['redirectUrl']; // レスポンスからredirectUrlを取得
-        if (redirectUrl != null && redirectUrl.isNotEmpty) {
-          print(redirectUrl);
-          await launch(redirectUrl);
-          // https://google.com
-        }
+        final redirectUrl = responseBody['redirectUrl'];
+        await launch(redirectUrl);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const MyHomePage(title: 'u-22 dev'), // 遷移先のウィジェットを指定
+          ),
+        );
       } else {
-        // エラー時の処理
         print('寄付が失敗しました');
       }
     } catch (e) {
-      // POSTリクエスト中の例外処理
       print('エラー: $e');
     }
   }
@@ -115,13 +116,34 @@ class _DonatePageState extends State<DonatePage> {
           },
         ),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('募金ページです。'),
+            const Text('募金ページです'),
+            const SizedBox(height: 100),
+            TextField(
+              keyboardType: TextInputType.number,
+              onChanged: (value) {
+                setState(() {
+                  donationAmount = int.tryParse(value) ?? 0;
+                });
+              },
+              decoration: const InputDecoration(
+                labelText: '募金額を入力してください',
+                border: OutlineInputBorder(), // ボーダースタイルを追加
+                prefixText: '¥', // 通貨記号を追加
+              ),
+            ),
+            const SizedBox(height: 100), // 間隔を設定
+
             ElevatedButton(
-              onPressed: _onDonateButtonPressed, // ボタンが押された時に呼ばれるメソッド
+              onPressed: donationAmount > 0 ? _onDonateButtonPressed : null,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue, // ボタンのテキスト色を設定
+              ),
               child: const Text('募金する'),
             ),
           ],
