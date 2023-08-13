@@ -58,9 +58,9 @@ class _DonatePageState extends State<DonatePage> {
     final merchantPaymentId = generateRandomString(30);
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:5001/v2/codes'), // 実際のエンドポイントに変更
+        Uri.parse('http://127.0.0.1:5001/v2/codes'),
         headers: {
-          'Content-Type': 'application/json', // JSONデータを送信するために必要
+          'Content-Type': 'application/json',
         },
         body: jsonEncode({
           "merchantPaymentId": merchantPaymentId,
@@ -119,10 +119,10 @@ class _DonatePageState extends State<DonatePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('募金ページです。'),
+            const Text('募金ページです。'),
             ElevatedButton(
               onPressed: _onDonateButtonPressed, // ボタンが押された時に呼ばれるメソッド
-              child: Text('募金する'),
+              child: const Text('募金する'),
             ),
           ],
         ),

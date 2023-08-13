@@ -5,7 +5,6 @@ import paypayopa
 
 API_KEY="a_skHc4tc3WQ_PD4m"
 API_SECRET="ex7PTkYWG/b68MronstUx6Va7JJnXvdCZG8WoE4Owug="
-MERCHANT_ID="563062778299113472"
 
 client = paypayopa.Client(auth=(API_KEY, API_SECRET),
                         production_mode=False)
