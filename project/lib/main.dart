@@ -3,6 +3,7 @@ import 'AroundSpot.dart';
 import 'donate.dart';
 import 'footer.dart';
 import 'settings.dart';
+import 'test_donate.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const Scaffold(
-        body: MyHomePage(title: 'u-22 dev'),
+        body: MyHomePage(title: 'ホーム'),
       ),
     );
   }
@@ -46,8 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(title: 'u-22 dev')),
+        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ホーム')),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
@@ -58,6 +58,11 @@ class _MyHomePageState extends State<MyHomePage> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
+      );
+    } else if (index == 3) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DonatePage()),
       );
     }
   }
@@ -81,6 +86,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => const DonatePage(),
+                  ),
+                );
+              },
+              child: const Text('募金する'),
+            ),
+            const Text(
+              'スマートペイメント(dev)',
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const TestDonatePage(),
                   ),
                 );
               },

@@ -20,14 +20,14 @@ String generateRandomString(int length) {
   return buffer.toString();
 }
 
-class DonatePage extends StatefulWidget {
-  const DonatePage({Key? key}) : super(key: key);
+class TestDonatePage extends StatefulWidget {
+  const TestDonatePage({Key? key}) : super(key: key);
 
   @override
   _DonatePageState createState() => _DonatePageState();
 }
 
-class _DonatePageState extends State<DonatePage> {
+class _DonatePageState extends State<TestDonatePage> {
   int _selectedIndex = 0;
   int donationAmount = 0;
 
@@ -59,7 +59,7 @@ class _DonatePageState extends State<DonatePage> {
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://127.0.0.1:5001/donate'),
+        Uri.parse('http://127.0.0.1:5001/smartpay'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -108,7 +108,7 @@ class _DonatePageState extends State<DonatePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('募金ページ'),
+        title: const Text('スマートペイメント'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {

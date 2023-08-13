@@ -14,10 +14,17 @@ class Footer extends StatelessWidget {
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
         BottomNavigationBarItem(
           icon: Icon(Icons.location_city),
-          label: '近くのスポット',
+          label: 'スポット',
         ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.money),
+        //   label: '募金する',
+        // ),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
       ],
+      iconSize: 24,
+      selectedFontSize: 15,
+      unselectedFontSize: 10,
     );
   }
 }

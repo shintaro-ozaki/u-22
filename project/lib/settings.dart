@@ -21,8 +21,7 @@ class _SettingsPageState extends State<SettingsPage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(title: 'u-22 dev')),
+        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ホーム')),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
@@ -42,9 +41,6 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('設定画面'),
-      ),
-      body: const Center(
-        child: Text('設定画面です。'),
       ),
       bottomNavigationBar: Footer(
         currentIndex: _selectedIndex,
