@@ -5,10 +5,11 @@ import paypayopa
 
 API_KEY="a_skHc4tc3WQ_PD4m"
 API_SECRET="ex7PTkYWG/b68MronstUx6Va7JJnXvdCZG8WoE4Owug="
+MERCHANT_ID="563062778299113472"
 
 client = paypayopa.Client(auth=(API_KEY, API_SECRET),
                         production_mode=False)
-client.set_assume_merchant("563062778299113472")
+client.set_assume_merchant(MERCHANT_ID)
 app = Flask(__name__)
 CORS(app)
 
@@ -18,13 +19,20 @@ def hello():
     print("hello")
     return {"message": "hello"}
 
-@app.route('/v2/codes', methods=["POST"])
-def test():
+@app.route('/donate', methods=["POST"])
+def donate():
     output = {}
     data = request.get_json()
     response = client.Code.create_qr_code(data)
     output["redirectUrl"] = response['data']['url']
     return jsonify(output)
+
+@app.route("/detail")
+def smartpay():
+    response = client.Payment.get_payment_details(MERCHANT_ID)
+    print(response)
+    return jsonify(response)
+
 
 if __name__ == "__main__":
     # need to change address where you are located in.

@@ -21,8 +21,7 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
     if (index == 0) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-            builder: (context) => const MyHomePage(title: 'u-22 dev')),
+        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ホーム')),
       );
     } else if (index == 1) {
       Navigator.pushReplacement(
