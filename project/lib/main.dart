@@ -7,9 +7,16 @@ import 'footer.dart';
 import 'settings.dart';
 import 'FrequencyProvider.dart';
 import 'NotifierProvider.dart';
+import 'package:location/location.dart';
+import 'map.dart';
+import 'dart:async';
 
 void main() {
   runApp(const MyApp());
+}
+
+class Const {
+  static const routeFirstView = '/first';
 }
 
 class MyApp extends StatelessWidget {
@@ -17,6 +24,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    permission();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AmountProvider()),
@@ -34,6 +42,28 @@ class MyApp extends StatelessWidget {
         home: const MyHomePage(title: 'ホーム'),
       ),
     );
+  }
+
+  Future<void> permission() async {
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+    Location locationService = Location();
+
+    serviceEnabled = await locationService.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await locationService.requestService();
+      if (!serviceEnabled) {
+        return;
+      }
+    }
+
+    permissionGranted = await locationService.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await locationService.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        return;
+      }
+    }
   }
 }
 
@@ -79,6 +109,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
+    final frequencyProvider = Provider.of<FrequencyProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -105,6 +137,27 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '現在の金額: ${amountProvider.amount} 円', // Display the current amount
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const Text(
+              '現在の頻度',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // 追加
+            ),
+            Text(
+              () {
+                switch (frequencyProvider.selectedFrequency) {
+                  case NotificationFrequency.unspecified:
+                    return '指定なし';
+                  case NotificationFrequency.oncePerDay:
+                    return '1日に1回';
+                  case NotificationFrequency.threeTimesPerDay:
+                    return '1日に3回';
+                  case NotificationFrequency.oncePerWeek:
+                    return '1週間に1回';
+                  default:
+                    return 'その他の設定';
+                }
+              }(),
+              style: const TextStyle(fontSize: 16),
             ),
           ],
         ),
