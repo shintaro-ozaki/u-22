@@ -41,7 +41,9 @@ dependencies:
   #============ from shintaro ===================
   url_launcher: ^6.0.0
   provider: ^5.0.0
-  #==============================================
+  # flutter_stripe: ^9.3.0
+  # stripe_sdk: ^5.0.0
+#==============================================
 
 
 dev_dependencies:
