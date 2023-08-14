@@ -37,7 +37,7 @@ dependencies:
 
 
   cupertino_icons: ^1.0.2
-  http: ^1.1.0
+    http: ^1.1.0
   #============ from shintaro ===================
   url_launcher: ^6.0.0
   provider: ^5.0.0
@@ -45,6 +45,10 @@ dependencies:
   # stripe_sdk: ^5.0.0
 #==============================================
 
+
+  google_maps_flutter: ^2.4.0
+  location: ^5.0.3
+  flutter_local_notifications: ^15.1.0
 
 dev_dependencies:
   flutter_test:
