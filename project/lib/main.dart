@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'AmountProvider.dart';
 import 'AroundSpot.dart';
-import 'donate.dart';
 import 'footer.dart';
 import 'settings.dart';
 import 'FrequencyProvider.dart';
@@ -10,6 +9,10 @@ import 'NotifierProvider.dart';
 import 'package:location/location.dart';
 import 'map.dart';
 import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:math';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(const MyApp());
@@ -75,6 +78,18 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
+String generateRandomString(int length) {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  final random = Random();
+  final StringBuffer buffer = StringBuffer();
+
+  for (int i = 0; i < length; i++) {
+    buffer.write(characters[random.nextInt(characters.length)]);
+  }
+
+  return buffer.toString();
+}
+
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
@@ -98,11 +113,57 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
-    } else if (index == 3) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const DonatePage()),
+    }
+  }
+
+  Future<void> _onDonateButtonPressed() async {
+    final amountProvider = Provider.of<AmountProvider>(context);
+    final merchantPaymentId = generateRandomString(30);
+    try {
+      final response = await http.post(
+        // need to change address where you are located in.
+        Uri.parse('http://127.0.0.1:5001/donate'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "merchantPaymentId": merchantPaymentId,
+          "codeType": "ORDER_QR",
+          // "redirectUrl": "app://main.dart",
+          // "redirectType": "APP_DEEP_LINK",
+          "redirectUrl": "",
+          "redirectType": "WEB_LINK",
+          "orderDescription": "募金グループへ",
+          "orderItems": [
+            {
+              "name": "募金",
+              "category": "pasteries",
+              "quantity": 1,
+              "productId": "67678",
+              "unitPrice": {"amount": "100", "currency": "JPY"},
+            }
+          ],
+          "amount": {"amount": "100", "currency": "JPY"},
+        }),
       );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final redirectUrl = responseBody['redirectUrl'];
+        await launch(redirectUrl);
+        // ignore: use_build_context_synchronously
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                const MyHomePage(title: 'ホーム'), // 遷移先のウィジェットを指定
+          ),
+        );
+      } else {
+        print('寄付が失敗しました');
+      }
+    } catch (e) {
+      print('エラー: $e');
     }
   }
 
@@ -120,17 +181,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              '募金ページは下記から',
-            ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const DonatePage(),
-                  ),
-                );
-              },
+              onPressed: _onDonateButtonPressed,
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.blue,
+              ),
               child: const Text('募金する'),
             ),
             const SizedBox(height: 20), // Add some spacing
