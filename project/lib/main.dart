@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'AmountProvider.dart';
+import 'footer.dart';
 import 'AroundSpot.dart';
 import 'donate.dart';
-import 'footer.dart';
 import 'settings.dart';
-import 'FrequencyProvider.dart';
-import 'NotifierProvider.dart';
+import './general/AmountProvider.dart';
+import './general/FrequencyProvider.dart';
+import '/general/NotifierProvider.dart';
 
 void main() {
   runApp(const MyApp());
