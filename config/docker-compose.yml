@@ -1,16 +1,17 @@
 version: '3'
 
 services:
-  container:
+  backend:
+    env_file: .env
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     image: ${IMAGE_NAME}
     container_name: ${CONTAINER_NAME}
     hostname: ${HOST_NAME}
     volumes:
-      - ~/.ssh:/home/${USER_NAME}/.ssh
-      - ../u-22:/home/${USER_NAME}
+      - /Users/${USERNAME}/.ssh:/root/.ssh
+      # - ../:/home/${USERNAME}
     ports:
-      - 3000:3000
+      - 5001:5001
     tty: true
