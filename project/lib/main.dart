@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'AmountProvider.dart';
 import 'AroundSpot.dart';
+import 'database_helper.dart';
 import 'footer.dart';
 import 'settings.dart';
 import 'FrequencyProvider.dart';
@@ -92,6 +93,7 @@ String generateRandomString(int length) {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  final dbHelper = DatabaseHelper.instance;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -117,7 +119,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _onDonateButtonPressed() async {
-    final amountProvider = Provider.of<AmountProvider>(context);
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
     final merchantPaymentId = generateRandomString(30);
     try {
       final response = await http.post(
@@ -129,8 +131,6 @@ class _MyHomePageState extends State<MyHomePage> {
         body: jsonEncode({
           "merchantPaymentId": merchantPaymentId,
           "codeType": "ORDER_QR",
-          // "redirectUrl": "app://main.dart",
-          // "redirectType": "APP_DEEP_LINK",
           "redirectUrl": "",
           "redirectType": "WEB_LINK",
           "orderDescription": "募金グループへ",
@@ -140,25 +140,21 @@ class _MyHomePageState extends State<MyHomePage> {
               "category": "pasteries",
               "quantity": 1,
               "productId": "67678",
-              "unitPrice": {"amount": "100", "currency": "JPY"},
+              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
             }
           ],
-          "amount": {"amount": "100", "currency": "JPY"},
+          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
         }),
       );
 
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
+        // ignore: deprecated_member_use
         await launch(redirectUrl);
-        // ignore: use_build_context_synchronously
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                const MyHomePage(title: 'ホーム'), // 遷移先のウィジェットを指定
-          ),
-        );
+        final now = DateTime.now();
+        final timestamp = now.toIso8601String();
+        await DatabaseHelper.instance.insert(amountProvider.amount, timestamp);
       } else {
         print('寄付が失敗しました');
       }
@@ -187,16 +183,32 @@ class _MyHomePageState extends State<MyHomePage> {
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.blue,
               ),
-              child: const Text('募金する'),
+              child: const Text('1円以上で募金できます'),
             ),
-            const SizedBox(height: 20), // Add some spacing
+            const SizedBox(height: 20),
+            FutureBuilder<double>(
+              future: getTotalAmount(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('エラー: ${snapshot.error}');
+                } else {
+                  final totalAmount = snapshot.data ?? 0;
+                  return Text(
+                    '総金額: $totalAmount 円',
+                    style: const TextStyle(fontSize: 18),
+                  );
+                }
+              },
+            ),
             Text(
-              '現在の金額: ${amountProvider.amount} 円', // Display the current amount
+              '現在の金額: ${amountProvider.amount} 円',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Text(
               '現在の頻度',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold), // 追加
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
               () {
@@ -223,5 +235,15 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: _onItemTapped,
       ),
     );
+  }
+
+  Future<double> getTotalAmount() async {
+    final rows = await DatabaseHelper.instance.queryAllRows();
+    int totalAmount = 0;
+    for (var row in rows) {
+      totalAmount += (row[DatabaseHelper.columnAmount] as int);
+    }
+    print(totalAmount);
+    return totalAmount.toDouble();
   }
 }
