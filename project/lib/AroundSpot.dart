@@ -62,7 +62,6 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
     super.initState();
 
     // 現在位置の取得
-    _locationService.enableBackgroundMode(enable: true);
     _getLocation();
     _initializePlatformSpecifics();
 
