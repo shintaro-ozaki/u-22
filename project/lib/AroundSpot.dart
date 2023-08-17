@@ -8,7 +8,7 @@ import 'package:location/location.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class AroundSpotPage extends StatefulWidget {
-  const AroundSpotPage({Key? key});
+  const AroundSpotPage({super.key});
 
   @override
   _AroundSpotPageState createState() => _AroundSpotPageState();

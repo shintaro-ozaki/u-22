@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite/sqflite.dart';
 import 'AmountProvider.dart';
 import 'AroundSpot.dart';
-import 'database_helper.dart';
 import 'footer.dart';
 import 'settings.dart';
 import 'FrequencyProvider.dart';
 import 'NotifierProvider.dart';
 import 'package:location/location.dart';
-import 'map.dart';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
 import 'package:url_launcher/url_launcher.dart';
+import 'database_helper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -93,7 +94,6 @@ String generateRandomString(int length) {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
-  final dbHelper = DatabaseHelper.instance;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -150,11 +150,12 @@ class _MyHomePageState extends State<MyHomePage> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
-        // ignore: deprecated_member_use
         await launch(redirectUrl);
-        final now = DateTime.now();
-        final timestamp = now.toIso8601String();
-        await DatabaseHelper.instance.insert(amountProvider.amount, timestamp);
+        await DatabaseHelper.instance.insertPayment({
+          'timestamp': DateTime.now().toIso8601String(),
+          'amount': amountProvider.amount,
+        });
+        setState(() {});
       } else {
         print('寄付が失敗しました');
       }
@@ -163,10 +164,49 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  String formatWeekDate(DateTime date) {
+    final monday = date.subtract(Duration(days: date.weekday - 1));
+    final sunday = monday.add(const Duration(days: 6));
+
+    final formatter = DateFormat('MM月dd日');
+    final mondayFormatted = formatter.format(monday);
+    final sundayFormatted = formatter.format(sunday);
+
+    return '$mondayFormatted から $sundayFormatted';
+  }
+
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
     final frequencyProvider = Provider.of<FrequencyProvider>(context);
+    final currentDate = DateTime.now();
+    final weekDateRange = formatWeekDate(currentDate);
+
+    Future<int> fetchCumulativeAmount() async {
+      final allPayments = await DatabaseHelper.instance.getAllPayments();
+      return allPayments.fold<int>(
+        0,
+        (previousValue, payment) => previousValue + (payment['amount'] as int),
+      );
+    }
+
+    Future<int> getWeeklyDonationTotal(context) async {
+      final db = await DatabaseHelper.instance.database;
+
+      // Calculate the start and end dates for the current week (Monday to Sunday)
+      final currentDate = DateTime.now();
+      final monday =
+          currentDate.subtract(Duration(days: currentDate.weekday - 1));
+      final sunday = monday.add(const Duration(days: 6));
+
+      // Query the database for donations within the week's date range
+      final total = Sqflite.firstIntValue(await db.rawQuery('''
+    SELECT SUM(amount) FROM payments
+    WHERE timestamp BETWEEN ? AND ?
+  ''', [monday.toIso8601String(), sunday.toIso8601String()]));
+
+      return total ?? 0;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -186,18 +226,40 @@ class _MyHomePageState extends State<MyHomePage> {
               child: const Text('1円以上で募金できます'),
             ),
             const SizedBox(height: 20),
-            FutureBuilder<double>(
-              future: getTotalAmount(),
+            FutureBuilder<int>(
+              future: fetchCumulativeAmount(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator(); // Loading indicator
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  final cumulativeAmount = snapshot.data ?? 0;
+                  return Text(
+                    '累計金額: $cumulativeAmount 円',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  );
+                }
+              },
+            ),
+            Text(
+              '今週の日付範囲: $weekDateRange',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            FutureBuilder<int>(
+              future: getWeeklyDonationTotal(context),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
-                  return Text('エラー: ${snapshot.error}');
+                  return Text('Error: ${snapshot.error}');
                 } else {
-                  final totalAmount = snapshot.data ?? 0;
+                  final weeklyTotal = snapshot.data ?? 0;
                   return Text(
-                    '総金額: $totalAmount 円',
-                    style: const TextStyle(fontSize: 18),
+                    '週間の募金累計額: $weeklyTotal 円',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
                   );
                 }
               },
@@ -227,6 +289,60 @@ class _MyHomePageState extends State<MyHomePage> {
               }(),
               style: const TextStyle(fontSize: 16),
             ),
+            Image.asset(
+              'assets/images/s2.png',
+            ),
+            // SizedBox(
+            //   width: 300, // Set an appropriate width for your chart
+            //   height: 200, // Set an appropriate height for your chart
+            //   child: LineChart(
+            //     LineChartData(
+            //       titlesData: const FlTitlesData(
+            //         show: true,
+            //         //右タイトル
+            //         rightTitles:
+            //             AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            //         //上タイトル
+            //         topTitles: AxisTitles(
+            //           sideTitles: SideTitles(showTitles: false),
+            //         ),
+            //         //下タイトル
+            //         bottomTitles: AxisTitles(
+            //           // axisNameWidget: Text('ブログ運営年月',style: _labelStyle,),
+            //           // axisNameSize: 40,
+            //           sideTitles: SideTitles(
+            //             showTitles: true,
+            //           ),
+            //         ),
+            //         // 左タイトル
+            //         leftTitles: AxisTitles(
+            //           // axisNameWidget: Text('記事数',style: _labelStyle,),
+            //           // axisNameSize: 25,
+            //           sideTitles: SideTitles(
+            //             showTitles: true,
+            //           ),
+            //         ),
+            //       ),
+            //       gridData: const FlGridData(show: false),
+            //       borderData: FlBorderData(show: false),
+            //       lineBarsData: [
+            //         LineChartBarData(
+            //           spots: [
+            //             // You need to populate this list with data points
+            //             const FlSpot(
+            //                 0, 100), // Example data point (time, amount)
+            //             const FlSpot(1, 150),
+            //             // ... Add more data points
+            //           ],
+            //           isCurved: true,
+            //           color: const Color.fromARGB(255, 63, 169, 255),
+            //           dotData: const FlDotData(show: false),
+            //           belowBarData: BarAreaData(show: false),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
           ],
         ),
       ),
@@ -235,15 +351,5 @@ class _MyHomePageState extends State<MyHomePage> {
         onTap: _onItemTapped,
       ),
     );
-  }
-
-  Future<double> getTotalAmount() async {
-    final rows = await DatabaseHelper.instance.queryAllRows();
-    int totalAmount = 0;
-    for (var row in rows) {
-      totalAmount += (row[DatabaseHelper.columnAmount] as int);
-    }
-    print(totalAmount);
-    return totalAmount.toDouble();
   }
 }

@@ -16,7 +16,9 @@ dependencies:
   provider: ^5.0.0
   shared_preferences: ^2.0.9
   sqflite: ^2.2.0+3
+  intl: ^0.17.0
   path_provider: ^2.0.11
+  fl_chart: ^0.63.0
 
 
   google_maps_flutter: ^2.4.0
@@ -30,3 +32,6 @@ dev_dependencies:
   flutter_lints: ^2.0.0
 flutter:
   uses-material-design: true
+
+  assets:
+  - assets/images/
