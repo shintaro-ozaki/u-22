@@ -88,6 +88,7 @@ class _DonatePageState extends State<DonatePage> {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
         await launch(redirectUrl);
+
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
