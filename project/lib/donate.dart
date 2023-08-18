@@ -24,6 +24,7 @@ class DonatePage extends StatefulWidget {
   const DonatePage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _DonatePageState createState() => _DonatePageState();
 }
 
@@ -66,10 +67,10 @@ class _DonatePageState extends State<DonatePage> {
         body: jsonEncode({
           "merchantPaymentId": merchantPaymentId,
           "codeType": "ORDER_QR",
-          // "redirectUrl": "app://main.dart",
-          // "redirectType": "APP_DEEP_LINK",
-          "redirectUrl": "",
-          "redirectType": "WEB_LINK",
+          "redirectUrl": "app://main.dart",
+          "redirectType": "APP_DEEP_LINK",
+          // "redirectUrl": "",
+          // "redirectType": "WEB_LINK",
           "orderDescription": "募金グループへ",
           "orderItems": [
             {
@@ -88,18 +89,20 @@ class _DonatePageState extends State<DonatePage> {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
         await launch(redirectUrl);
+
         // ignore: use_build_context_synchronously
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                const MyHomePage(title: 'ホーム'), // 遷移先のウィジェットを指定
+            builder: (context) => const MyHomePage(title: 'ホーム'),
           ),
         );
       } else {
+        // ignore: avoid_print
         print('寄付が失敗しました');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('エラー: $e');
     }
   }
@@ -139,7 +142,7 @@ class _DonatePageState extends State<DonatePage> {
             ),
             const SizedBox(height: 100),
             ElevatedButton(
-              onPressed: donationAmount > 0 ? _onDonateButtonPressed : null,
+              onPressed: _onDonateButtonPressed,
               style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.white,
                 backgroundColor: Colors.blue,
