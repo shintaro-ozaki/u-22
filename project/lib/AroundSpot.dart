@@ -17,7 +17,6 @@ class AroundSpotPage extends StatefulWidget {
 class _AroundSpotPageState extends State<AroundSpotPage> {
   //  Google Map API
   final Location _locationService = Location();
-  GoogleMapController? _googleMapController;
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
@@ -128,9 +127,7 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
               _yourLocation?.latitude ?? 0.0, _yourLocation?.longitude ?? 0.0),
           zoom: 18.0,
         ),
-        onMapCreated: (controller) {
-          _googleMapController = controller;
-        },
+        onMapCreated: (controller) {},
         // 現在位置にアイコン（青い円形のやつ）を置く
         myLocationEnabled: true,
       );

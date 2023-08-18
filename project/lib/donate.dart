@@ -24,6 +24,7 @@ class DonatePage extends StatefulWidget {
   const DonatePage({Key? key}) : super(key: key);
 
   @override
+  // ignore: library_private_types_in_public_api
   _DonatePageState createState() => _DonatePageState();
 }
 
@@ -93,14 +94,15 @@ class _DonatePageState extends State<DonatePage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-                const MyHomePage(title: 'ホーム'), // 遷移先のウィジェットを指定
+            builder: (context) => const MyHomePage(title: 'ホーム'),
           ),
         );
       } else {
+        // ignore: avoid_print
         print('寄付が失敗しました');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('エラー: $e');
     }
   }

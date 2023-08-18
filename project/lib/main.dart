@@ -1,19 +1,21 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:location/location.dart';
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
+
 import 'AmountProvider.dart';
 import 'AroundSpot.dart';
 import 'footer.dart';
 import 'settings.dart';
 import 'FrequencyProvider.dart';
 import 'NotifierProvider.dart';
-import 'package:location/location.dart';
 import 'dart:async';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:math';
-import 'package:url_launcher/url_launcher.dart';
 import 'database_helper.dart';
 
 void main() {
@@ -70,6 +72,27 @@ class MyApp extends StatelessWidget {
       }
     }
   }
+}
+
+Future<List<FlSpot>> getDataForGraph() async {
+  final db = await DatabaseHelper.instance.database;
+  final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
+
+  final List<FlSpot> spots = [];
+  for (final row in data) {
+    final timestamp = DateTime.parse(row['timestamp'] as String);
+    final amount = row['amount'] as int;
+
+    // 日付の形式を MM-dd に書式化
+    final dateFormatter = DateFormat('MM-dd');
+    final formattedDate = dateFormatter.format(timestamp);
+
+    print(formattedDate); // フォーマットされた日付を確認
+
+    spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
+  }
+
+  return spots;
 }
 
 class MyHomePage extends StatefulWidget {
@@ -157,9 +180,11 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         setState(() {});
       } else {
+        // ignore: avoid_print
         print('寄付が失敗しました');
       }
     } catch (e) {
+      // ignore: avoid_print
       print('エラー: $e');
     }
   }
@@ -192,19 +217,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
     Future<int> getWeeklyDonationTotal(context) async {
       final db = await DatabaseHelper.instance.database;
-
-      // Calculate the start and end dates for the current week (Monday to Sunday)
       final currentDate = DateTime.now();
       final monday =
           currentDate.subtract(Duration(days: currentDate.weekday - 1));
       final sunday = monday.add(const Duration(days: 6));
 
-      // Query the database for donations within the week's date range
       final total = Sqflite.firstIntValue(await db.rawQuery('''
     SELECT SUM(amount) FROM payments
     WHERE timestamp BETWEEN ? AND ?
   ''', [monday.toIso8601String(), sunday.toIso8601String()]));
-
       return total ?? 0;
     }
 
@@ -213,7 +234,7 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -230,7 +251,7 @@ class _MyHomePageState extends State<MyHomePage> {
               future: fetchCumulativeAmount(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator(); // Loading indicator
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text('Error: ${snapshot.error}');
                 } else {
@@ -292,57 +313,41 @@ class _MyHomePageState extends State<MyHomePage> {
             Image.asset(
               'assets/images/s2.png',
             ),
-            // SizedBox(
-            //   width: 300, // Set an appropriate width for your chart
-            //   height: 200, // Set an appropriate height for your chart
-            //   child: LineChart(
-            //     LineChartData(
-            //       titlesData: const FlTitlesData(
-            //         show: true,
-            //         //右タイトル
-            //         rightTitles:
-            //             AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            //         //上タイトル
-            //         topTitles: AxisTitles(
-            //           sideTitles: SideTitles(showTitles: false),
-            //         ),
-            //         //下タイトル
-            //         bottomTitles: AxisTitles(
-            //           // axisNameWidget: Text('ブログ運営年月',style: _labelStyle,),
-            //           // axisNameSize: 40,
-            //           sideTitles: SideTitles(
-            //             showTitles: true,
-            //           ),
-            //         ),
-            //         // 左タイトル
-            //         leftTitles: AxisTitles(
-            //           // axisNameWidget: Text('記事数',style: _labelStyle,),
-            //           // axisNameSize: 25,
-            //           sideTitles: SideTitles(
-            //             showTitles: true,
-            //           ),
-            //         ),
-            //       ),
-            //       gridData: const FlGridData(show: false),
-            //       borderData: FlBorderData(show: false),
-            //       lineBarsData: [
-            //         LineChartBarData(
-            //           spots: [
-            //             // You need to populate this list with data points
-            //             const FlSpot(
-            //                 0, 100), // Example data point (time, amount)
-            //             const FlSpot(1, 150),
-            //             // ... Add more data points
-            //           ],
-            //           isCurved: true,
-            //           color: const Color.fromARGB(255, 63, 169, 255),
-            //           dotData: const FlDotData(show: false),
-            //           belowBarData: BarAreaData(show: false),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
+            SizedBox(
+              width: 300,
+              height: 200,
+              child: FutureBuilder<List<FlSpot>>(
+                future: getDataForGraph(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    final dataSpots = snapshot.data ?? [];
+
+                    return LineChart(
+                      LineChartData(
+                        titlesData: const FlTitlesData(
+                            // ... Configure your title data here ...
+                            ),
+                        gridData: const FlGridData(show: false),
+                        borderData: FlBorderData(show: false),
+                        lineBarsData: [
+                          LineChartBarData(
+                            spots: dataSpots,
+                            isCurved: true,
+                            color: const Color.fromARGB(255, 63, 169, 255),
+                            dotData: const FlDotData(show: false),
+                            belowBarData: BarAreaData(show: false),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+            )
           ],
         ),
       ),
