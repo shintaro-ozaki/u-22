@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
@@ -22,16 +21,11 @@ void main() {
   runApp(const MyApp());
 }
 
-class Const {
-  static const routeFirstView = '/first';
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    permission();
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AmountProvider()),
@@ -49,28 +43,6 @@ class MyApp extends StatelessWidget {
         home: const MyHomePage(title: 'ホーム'),
       ),
     );
-  }
-
-  Future<void> permission() async {
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
-    Location locationService = Location();
-
-    serviceEnabled = await locationService.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await locationService.requestService();
-      if (!serviceEnabled) {
-        return;
-      }
-    }
-
-    permissionGranted = await locationService.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await locationService.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
   }
 }
 
