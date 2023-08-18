@@ -7,11 +7,11 @@ import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'footer.dart';
-import 'AroundSpot.dart';
+import 'map.dart';
 import 'settings.dart';
-import './components/AmountProvider.dart';
-import './components/FrequencyProvider.dart';
-import './components/NotifierProvider.dart';
+import './components/amount_provider.dart';
+import './components/frequency_provider.dart';
+import './components/notifier_provider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -59,7 +59,7 @@ Future<List<FlSpot>> getDataForGraph() async {
     final dateFormatter = DateFormat('MM-dd');
     final formattedDate = dateFormatter.format(timestamp);
 
-    print(formattedDate); // フォーマットされた日付を確認
+    debugPrint(formattedDate.toString()); // フォーマットされた日付を確認
 
     spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
   }
@@ -145,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
+        // ignore: deprecated_member_use
         await launch(redirectUrl);
         await DatabaseHelper.instance.insertPayment({
           'timestamp': DateTime.now().toIso8601String(),
