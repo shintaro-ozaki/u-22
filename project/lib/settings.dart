@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'footer.dart';
 import 'main.dart';
-import 'AroundSpot.dart';
-import './components/AmountProvider.dart';
-import './components/FrequencyProvider.dart';
+import 'map.dart';
+import './components/amount_provider.dart';
+import './components/frequency_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);

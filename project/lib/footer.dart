@@ -9,7 +9,7 @@ import './components/location.dart';
 import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'components/AmountProvider.dart';
+import './components/amount_provider.dart';
 import './db/database_helper.dart';
 
 late LocationData? currentLocation;
@@ -138,6 +138,7 @@ class _Footer extends State<Footer> {
       if (response.statusCode == 200) {
         final responseBody = jsonDecode(response.body);
         final redirectUrl = responseBody['redirectUrl'];
+        // ignore: deprecated_member_use
         await launch(redirectUrl);
         await DatabaseHelper.instance.insertPayment({
           'timestamp': DateTime.now().toIso8601String(),
