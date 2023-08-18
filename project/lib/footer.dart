@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'dart:isolate';
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
-import 'package:background_locator_2/background_locator.dart';
-import 'package:background_locator_2/settings/android_settings.dart';
-import 'package:background_locator_2/settings/ios_settings.dart';
-import 'package:background_locator_2/settings/locator_settings.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:location/location.dart';
+import 'package:network_info_plus/network_info_plus.dart';
+import './components/location.dart';
 
-import 'location_callback_handler.dart';
+late LocationData? currentLocation;
 
 class Footer extends StatefulWidget {
   final int currentIndex;
@@ -21,55 +18,119 @@ class Footer extends StatefulWidget {
 }
 
 class _Footer extends State<Footer> {
-  //static const String _isolateName = "LocatorIsolate";
-  ReceivePort port = ReceivePort();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
+  final info = NetworkInfo();
+
+  final Location _locationService = Location();
+
+  // 現在位置の監視状況
+  StreamSubscription? _locationChangedListen;
+
+  String wifiName = '';
+
+  bool notify = true;
 
   @override
   void initState() {
     super.initState();
 
-    // IsolateNameServer.registerPortWithName(port.sendPort, _isolateName);
-    // port.listen((dynamic data) {
-    //   //debugPrint(data.toString());
-    // });
-    initPlatformState();
-    _startLocator();
+    // 初期化
+    _initializePlatformSpecifics();
+    _locationService.enableBackgroundMode(enable: true);
+
+    // 現在位置の変化を監視
+    _locationChangedListen =
+        _locationService.onLocationChanged.listen((LocationData result) async {
+      setState(() {
+        // Future<String?> wifiName = info.getWifiName();
+        // debugPrint(wifiName.toString());
+        currentLocation = result;
+        if (currentLocation != null) {
+          debugPrint(currentLocation.toString());
+          if (notify && check()) {
+            _showNotification();
+            notify = false;
+          }
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
+    // 監視を終了
+    _locationChangedListen?.cancel();
   }
 
-  Future<void> initPlatformState() async {
-    await BackgroundLocator.initialize();
+  bool check() {
+    double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
+    // 位置情報判定
+    for (Map location in locations) {
+      rangeLat = location['radius'] * 0.000009;
+      rangeLng = location['radius'] * 0.000011;
+      diffLat = location['lat'] - currentLocation?.latitude;
+      diffLng = location['lng'] - currentLocation?.longitude;
+      if ((-rangeLat < diffLat && diffLat < rangeLat) &&
+          (-rangeLng < diffLng && diffLng < rangeLng)) {
+        return true;
+      }
+    }
+    // wifi判定
+    // if (wifiName == '') {
+    //   return true;
+    // }
+    return false;
   }
 
-  void _startLocator() {
-    Map<String, dynamic> data = {'countInit': 1};
-    BackgroundLocator.registerLocationUpdate(LocationCallbackHandler.callback,
-        initCallback: LocationCallbackHandler.initCallback,
-        initDataCallback: data,
-        disposeCallback: LocationCallbackHandler.disposeCallback,
-        iosSettings: const IOSSettings(
-            accuracy: LocationAccuracy.NAVIGATION,
-            distanceFilter: 0,
-            stopWithTerminate: true),
-        autoStop: false,
-        androidSettings: const AndroidSettings(
-            accuracy: LocationAccuracy.NAVIGATION,
-            interval: 5,
-            distanceFilter: 0,
-            client: LocationClient.google,
-            androidNotificationSettings: AndroidNotificationSettings(
-                notificationChannelName: 'Location tracking',
-                notificationTitle: 'Start Location Tracking',
-                notificationMsg: 'Track location in background',
-                notificationBigMsg:
-                    'Background location is on to keep the app up-tp-date with your location. This is required for main features to work properly when the app is not running.',
-                notificationIconColor: Colors.grey,
-                notificationTapCallback:
-                    LocationCallbackHandler.notificationCallback)));
+  void _initializePlatformSpecifics() {
+    var initializationSettingsAndroid =
+        const AndroidInitializationSettings('app_icon');
+
+    var initializationSettingsIOS = DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: false,
+      onDidReceiveLocalNotification: (id, title, body, payload) async {
+        // your call back to the UI
+      },
+    );
+
+    var initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid, iOS: initializationSettingsIOS);
+
+    flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: (NotificationResponse res) {
+      debugPrint('ここにpaypay処理を入れる');
+    });
+  }
+
+  Future<void> _showNotification() async {
+    var androidChannelSpecifics = const AndroidNotificationDetails(
+      'CHANNEL_ID',
+      'CHANNEL_NAME',
+      channelDescription: "CHANNEL_DESCRIPTION",
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: false,
+      timeoutAfter: 5000,
+      styleInformation: DefaultStyleInformation(true, true),
+    );
+
+    var iosChannelSpecifics = const DarwinNotificationDetails();
+
+    var platformChannelSpecifics = NotificationDetails(
+        android: androidChannelSpecifics, iOS: iosChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0, // Notification ID
+      '募金しますか？', // Notification Title
+      null, // Notification Body, set as null to remove the body
+      platformChannelSpecifics,
+      payload: 'New Payload', // Notification Payload
+    );
   }
 
   @override

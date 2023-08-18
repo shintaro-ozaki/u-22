@@ -46,9 +46,9 @@ dependencies:
 #==============================================
 
   permission_handler: ^10.4.3
-  background_locator_2: ^2.0.6
   google_maps_flutter: ^2.4.0
   location: ^5.0.3
+  network_info_plus: ^4.0.2
   flutter_local_notifications: ^15.1.0
 
 dev_dependencies:

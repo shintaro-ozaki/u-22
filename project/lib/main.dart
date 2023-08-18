@@ -4,9 +4,9 @@ import 'footer.dart';
 import 'AroundSpot.dart';
 import 'donate.dart';
 import 'settings.dart';
-import './general/AmountProvider.dart';
-import './general/FrequencyProvider.dart';
-import './general/NotifierProvider.dart';
+import './components/AmountProvider.dart';
+import './components/FrequencyProvider.dart';
+import './components/NotifierProvider.dart';
 
 void main() {
   runApp(const MyApp());

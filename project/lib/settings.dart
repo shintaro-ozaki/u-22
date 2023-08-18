@@ -3,9 +3,9 @@ import 'package:provider/provider.dart';
 import 'footer.dart';
 import 'main.dart';
 import 'AroundSpot.dart';
-import './general/AmountProvider.dart';
-import './general/FrequencyProvider.dart';
-import './general/NotifierProvider.dart';
+import './components/AmountProvider.dart';
+import './components/FrequencyProvider.dart';
+import './components/NotifierProvider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
