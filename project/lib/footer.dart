@@ -16,10 +16,6 @@ class Footer extends StatelessWidget {
           icon: Icon(Icons.location_city),
           label: 'スポット',
         ),
-        // BottomNavigationBarItem(
-        //   icon: Icon(Icons.money),
-        //   label: '募金する',
-        // ),
         BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
       ],
       iconSize: 24,
