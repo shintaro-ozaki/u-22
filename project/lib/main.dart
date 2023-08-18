@@ -15,7 +15,7 @@ import './components/NotifierProvider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
-import 'database_helper.dart';
+import './db/database_helper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -292,7 +292,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 future: getDataForGraph(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {

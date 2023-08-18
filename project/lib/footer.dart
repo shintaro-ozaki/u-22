@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:location/location.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
+import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'components/AmountProvider.dart';
+import './db/database_helper.dart';
 
 late LocationData? currentLocation;
 
@@ -85,6 +92,68 @@ class _Footer extends State<Footer> {
     return false;
   }
 
+  String generateRandomString(int length) {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random();
+    final StringBuffer buffer = StringBuffer();
+
+    for (int i = 0; i < length; i++) {
+      buffer.write(characters[random.nextInt(characters.length)]);
+    }
+
+    return buffer.toString();
+  }
+
+  Future<void> _onDonateButtonPressed() async {
+    final merchantPaymentId = generateRandomString(30);
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
+    try {
+      final response = await http.post(
+        // need to change address where you are located in.
+        Uri.parse('http://192.168.10.6:5001/donate'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "merchantPaymentId": merchantPaymentId,
+          "codeType": "ORDER_QR",
+          "redirectUrl": "main.dart",
+          "redirectType": "APP_DEEP_LINK",
+          // "redirectUrl": "",
+          // "redirectType": "WEB_LINK",
+          "orderDescription": "募金グループへ",
+          "orderItems": [
+            {
+              "name": "募金",
+              "category": "pasteries",
+              "quantity": 1,
+              "productId": "67678",
+              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
+            }
+          ],
+          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final redirectUrl = responseBody['redirectUrl'];
+        await launch(redirectUrl);
+        await DatabaseHelper.instance.insertPayment({
+          'timestamp': DateTime.now().toIso8601String(),
+          'amount': amountProvider.amount,
+        });
+        setState(() {});
+      } else {
+        // ignore: avoid_print
+        print('寄付が失敗しました');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('エラー: $e');
+    }
+  }
+
   void _initializePlatformSpecifics() {
     var initializationSettingsAndroid =
         const AndroidInitializationSettings('app_icon');
@@ -103,7 +172,7 @@ class _Footer extends State<Footer> {
 
     flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (NotificationResponse res) {
-      debugPrint('ここにpaypay処理を入れる');
+      _onDonateButtonPressed();
     });
   }
 
@@ -135,20 +204,23 @@ class _Footer extends State<Footer> {
 
   @override
   Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      currentIndex: widget.currentIndex,
-      onTap: widget.onTap,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.location_city),
-          label: 'スポット',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
-      ],
-      iconSize: 24,
-      selectedFontSize: 15,
-      unselectedFontSize: 10,
+    return ChangeNotifierProvider(
+      create: (context) => AmountProvider(),
+      child: BottomNavigationBar(
+        currentIndex: widget.currentIndex,
+        onTap: widget.onTap,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.location_city),
+            label: 'スポット',
+          ),
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
+        ],
+        iconSize: 24,
+        selectedFontSize: 15,
+        unselectedFontSize: 10,
+      ),
     );
   }
 }
