@@ -7,12 +7,12 @@ import 'package:location/location.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 
-import 'AmountProvider.dart';
-import 'AroundSpot.dart';
 import 'footer.dart';
+import 'AroundSpot.dart';
 import 'settings.dart';
-import 'FrequencyProvider.dart';
-import 'NotifierProvider.dart';
+import './components/AmountProvider.dart';
+import './components/FrequencyProvider.dart';
+import './components/NotifierProvider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
