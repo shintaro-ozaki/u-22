@@ -5,7 +5,6 @@ import 'main.dart';
 import 'AroundSpot.dart';
 import './components/AmountProvider.dart';
 import './components/FrequencyProvider.dart';
-import './components/NotifierProvider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -69,7 +68,7 @@ class _SettingsPageState extends State<SettingsPage> {
       appBar: AppBar(
         title: const Text('設定画面'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
