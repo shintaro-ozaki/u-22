@@ -12,8 +12,6 @@ import 'dart:convert';
 import './components/amount_provider.dart';
 import './db/database_helper.dart';
 
-LocationData? currentLocation;
-
 class Footer extends StatefulWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -53,13 +51,13 @@ class _Footer extends State<Footer> {
       setState(() {
         // Future<String?> wifiName = info.getWifiName();
         // debugPrint(wifiName.toString());
-        currentLocation = result;
-        if (currentLocation != null) {
-          debugPrint(currentLocation.toString());
-          if (notify && check()) {
-            _showNotification();
-            notify = false;
-          }
+        final locationProvider =
+            Provider.of<LocationProvider>(context, listen: false);
+        debugPrint(result.toString());
+        locationProvider.updateLocation(result);
+        if (notify && check()) {
+          _showNotification();
+          notify = false;
         }
       });
     });
@@ -73,13 +71,15 @@ class _Footer extends State<Footer> {
   }
 
   bool check() {
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
     double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
     // 位置情報判定
     for (Map location in locations) {
       rangeLat = location['radius'] * 0.000009;
       rangeLng = location['radius'] * 0.000011;
-      diffLat = location['lat'] - currentLocation?.latitude;
-      diffLng = location['lng'] - currentLocation?.longitude;
+      diffLat = location['lat'] - locationProvider.currentLocation?.latitude;
+      diffLng = location['lng'] - locationProvider.currentLocation?.longitude;
       if ((-rangeLat < diffLat && diffLat < rangeLat) &&
           (-rangeLng < diffLng && diffLng < rangeLng)) {
         return true;
@@ -203,23 +203,20 @@ class _Footer extends State<Footer> {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => AmountProvider(),
-      child: BottomNavigationBar(
-        currentIndex: widget.currentIndex,
-        onTap: widget.onTap,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.location_city),
-            label: 'スポット',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
-        ],
-        iconSize: 24,
-        selectedFontSize: 15,
-        unselectedFontSize: 10,
-      ),
+    return BottomNavigationBar(
+      currentIndex: widget.currentIndex,
+      onTap: widget.onTap,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ホーム'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.location_city),
+          label: 'スポット',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.settings), label: '設定'),
+      ],
+      iconSize: 24,
+      selectedFontSize: 15,
+      unselectedFontSize: 10,
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
 import 'footer.dart';
 import 'main.dart';
 import 'settings.dart';
@@ -67,7 +68,8 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
   }
 
   Widget _makeGoogleMap() {
-    if (currentLocation == null) {
+    final locationProvider = Provider.of<LocationProvider>(context);
+    if (locationProvider.currentLocation == null) {
       // 現在位置が取れるまではローディング中
       return const Center(
         child: CircularProgressIndicator(),
@@ -77,8 +79,8 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
       return GoogleMap(
         // 初期表示される位置情報を現在位置から設定
         initialCameraPosition: CameraPosition(
-          target: LatLng(currentLocation?.latitude ?? 0.0,
-              currentLocation?.longitude ?? 0.0),
+          target: LatLng(locationProvider.currentLocation?.latitude ?? 0.0,
+              locationProvider.currentLocation?.longitude ?? 0.0),
           zoom: 16.0,
         ),
         circles: createCircle(),

@@ -1,10 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:project/components/location.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 
 import 'footer.dart';
 import 'map.dart';
@@ -13,8 +12,6 @@ import './components/amount_provider.dart';
 import './components/frequency_provider.dart';
 import './components/notifier_provider.dart';
 import 'dart:async';
-import 'dart:convert';
-import 'dart:math';
 import './db/database_helper.dart';
 
 void main() {
@@ -30,6 +27,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AmountProvider()),
         ChangeNotifierProvider(create: (context) => FrequencyProvider()),
+        ChangeNotifierProvider(create: (context) => LocationProvider()),
         ChangeNotifierProvider(
             create: (context) => NotificationSettingsProvider()),
       ],
@@ -73,18 +71,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-String generateRandomString(int length) {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  final random = Random();
-  final StringBuffer buffer = StringBuffer();
-
-  for (int i = 0; i < length; i++) {
-    buffer.write(characters[random.nextInt(characters.length)]);
-  }
-
-  return buffer.toString();
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
@@ -108,55 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
-    }
-  }
-
-  Future<void> _onDonateButtonPressed() async {
-    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
-    final merchantPaymentId = generateRandomString(30);
-    try {
-      final response = await http.post(
-        // need to change address where you are located in.
-        Uri.parse('http://127.0.0.1:5001/donate'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          "merchantPaymentId": merchantPaymentId,
-          "codeType": "ORDER_QR",
-          "redirectUrl": "",
-          "redirectType": "WEB_LINK",
-          "orderDescription": "募金グループへ",
-          "orderItems": [
-            {
-              "name": "募金",
-              "category": "pasteries",
-              "quantity": 1,
-              "productId": "67678",
-              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
-            }
-          ],
-          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final redirectUrl = responseBody['redirectUrl'];
-        // ignore: deprecated_member_use
-        await launch(redirectUrl);
-        await DatabaseHelper.instance.insertPayment({
-          'timestamp': DateTime.now().toIso8601String(),
-          'amount': amountProvider.amount,
-        });
-        setState(() {});
-      } else {
-        // ignore: avoid_print
-        print('寄付が失敗しました');
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print('エラー: $e');
     }
   }
 
@@ -209,14 +146,6 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            ElevatedButton(
-              onPressed: _onDonateButtonPressed,
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.blue,
-              ),
-              child: const Text('1円以上で募金できます'),
-            ),
             const SizedBox(height: 20),
             FutureBuilder<int>(
               future: fetchCumulativeAmount(),

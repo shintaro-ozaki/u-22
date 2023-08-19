@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:location/location.dart';
+
+class LocationProvider with ChangeNotifier {
+  LocationData? currentLocation;
+
+  void updateLocation(LocationData newLocation) {
+    currentLocation = newLocation;
+    notifyListeners();
+  }
+}
 
 final List<Map<String, double>> locations = [
   {'lat': 35.612850, 'lng': 139.549127, 'radius': 200.0},
