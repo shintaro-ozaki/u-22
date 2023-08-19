@@ -2,7 +2,6 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project/components/location.dart';
-import 'package:project/lock.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -13,7 +12,7 @@ import './components/amount_provider.dart';
 import './components/frequency_provider.dart';
 import 'dart:async';
 import './db/database_helper.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'lock.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,16 +20,6 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  Future<bool> checkPermission() async {
-    var permissionLocation = Permission.location.status;
-    var permissionNotification = Permission.notification.status;
-    if (await permissionLocation.isDenied ||
-        await permissionNotification.isDenied) {
-      return Future.value(false);
-    }
-    return Future.value(true);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,12 +39,10 @@ class MyApp extends StatelessWidget {
         home: FutureBuilder(
           future: checkPermission(),
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-            if (snapshot.hasData) {
-              if (snapshot.data == true) {
-                return const MyHomePage(title: 'ホーム');
-              } else {
-                return const LockPage(title: '制限モード');
-              }
+            if (snapshot.data == true) {
+              return const MyHomePage(title: 'ホーム');
+            } else if (snapshot.data == false) {
+              return const LockPage(title: '制限モード');
             } else {
               return const CircularProgressIndicator();
             }
