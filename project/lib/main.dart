@@ -46,27 +46,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-Future<List<FlSpot>> getDataForGraph() async {
-  final db = await DatabaseHelper.instance.database;
-  final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
-
-  final List<FlSpot> spots = [];
-  for (final row in data) {
-    final timestamp = DateTime.parse(row['timestamp'] as String);
-    final amount = row['amount'] as int;
-
-    // 日付の形式を MM-dd に書式化
-    final dateFormatter = DateFormat('MM-dd');
-    final formattedDate = dateFormatter.format(timestamp);
-
-    debugPrint(formattedDate.toString()); // フォーマットされた日付を確認
-
-    spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
-  }
-
-  return spots;
-}
-
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -89,6 +68,7 @@ String generateRandomString(int length) {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  final dbInfo = DatabaseInformation.instance;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -258,69 +238,44 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               },
             ),
-            Text(
-              '現在の金額: ${amountProvider.amount} 円',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              '現在の頻度',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              () {
-                switch (frequencyProvider.selectedFrequency) {
-                  case NotificationFrequency.unspecified:
-                    return '指定なし';
-                  case NotificationFrequency.oncePerDay:
-                    return '1日に1回';
-                  case NotificationFrequency.threeTimesPerDay:
-                    return '1日に3回';
-                  case NotificationFrequency.oncePerWeek:
-                    return '1週間に1回';
-                  default:
-                    return 'その他の設定';
+            FutureBuilder<Map<String, dynamic>?>(
+              future: dbInfo.getLastInformation(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  final lastInfo = snapshot.data;
+
+                  int currentAmount = amountProvider.amount;
+                  String currentFrequency = 'Not specified';
+
+                  if (lastInfo != null) {
+                    currentAmount = lastInfo['setamount'] as int;
+                    currentFrequency = lastInfo['frequency'] as String;
+                  }
+
+                  return Column(
+                    children: [
+                      Text(
+                        '現在の金額: $currentAmount 円',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '現在の頻度: $currentFrequency',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  );
                 }
-              }(),
-              style: const TextStyle(fontSize: 16),
+              },
             ),
             Image.asset(
               'assets/images/s2.png',
             ),
-            SizedBox(
-              width: 300,
-              height: 200,
-              child: FutureBuilder<List<FlSpot>>(
-                future: getDataForGraph(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    final dataSpots = snapshot.data ?? [];
-
-                    return LineChart(
-                      LineChartData(
-                        titlesData: const FlTitlesData(
-                            // ... Configure your title data here ...
-                            ),
-                        gridData: const FlGridData(show: false),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: dataSpots,
-                            isCurved: true,
-                            color: const Color.fromARGB(255, 63, 169, 255),
-                            dotData: const FlDotData(show: false),
-                            belowBarData: BarAreaData(show: false),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-              ),
-            )
           ],
         ),
       ),
