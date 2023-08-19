@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:project/components/location.dart';
+import 'package:project/lock.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -10,9 +11,9 @@ import 'map.dart';
 import 'settings.dart';
 import './components/amount_provider.dart';
 import './components/frequency_provider.dart';
-import './components/notifier_provider.dart';
 import 'dart:async';
 import './db/database_helper.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,6 +22,16 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  Future<bool> checkPermission() async {
+    var permissionLocation = Permission.location.status;
+    var permissionNotification = Permission.notification.status;
+    if (await permissionLocation.isDenied ||
+        await permissionNotification.isDenied) {
+      return Future.value(false);
+    }
+    return Future.value(true);
+  }
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -28,8 +39,6 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AmountProvider()),
         ChangeNotifierProvider(create: (context) => FrequencyProvider()),
         ChangeNotifierProvider(create: (context) => LocationProvider()),
-        ChangeNotifierProvider(
-            create: (context) => NotificationSettingsProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -38,29 +47,23 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: const MyHomePage(title: 'ホーム'),
+        home: FutureBuilder(
+          future: checkPermission(),
+          builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data == true) {
+                return const MyHomePage(title: 'ホーム');
+              } else {
+                return const LockPage(title: '制限モード');
+              }
+            } else {
+              return const CircularProgressIndicator();
+            }
+          },
+        ),
       ),
     );
   }
-}
-
-Future<List<FlSpot>> getDataForGraph() async {
-  final db = await DatabaseHelper.instance.database;
-  final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
-
-  final List<FlSpot> spots = [];
-  for (final row in data) {
-    final timestamp = DateTime.parse(row['timestamp'] as String);
-    final amount = row['amount'] as int;
-
-    // 日付の形式を MM-dd に書式化
-    final dateFormatter = DateFormat('MM-dd');
-    final formattedDate = dateFormatter.format(timestamp);
-
-    spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
-  }
-
-  return spots;
 }
 
 class MyHomePage extends StatefulWidget {
@@ -106,6 +109,25 @@ class _MyHomePageState extends State<MyHomePage> {
     final sundayFormatted = formatter.format(sunday);
 
     return '$mondayFormatted から $sundayFormatted';
+  }
+
+  Future<List<FlSpot>> getDataForGraph() async {
+    final db = await DatabaseHelper.instance.database;
+    final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
+
+    final List<FlSpot> spots = [];
+    for (final row in data) {
+      final timestamp = DateTime.parse(row['timestamp'] as String);
+      final amount = row['amount'] as int;
+
+      // 日付の形式を MM-dd に書式化
+      final dateFormatter = DateFormat('MM-dd');
+      final formattedDate = dateFormatter.format(timestamp);
+
+      spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
+    }
+
+    return spots;
   }
 
   @override
