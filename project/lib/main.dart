@@ -59,8 +59,6 @@ Future<List<FlSpot>> getDataForGraph() async {
     final dateFormatter = DateFormat('MM-dd');
     final formattedDate = dateFormatter.format(timestamp);
 
-    debugPrint(formattedDate.toString()); // フォーマットされた日付を確認
-
     spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
   }
 
@@ -273,7 +271,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     return '指定なし';
                   case NotificationFrequency.oncePerDay:
                     return '1日に1回';
-                  case NotificationFrequency.threeTimesPerDay:
+                  case NotificationFrequency.oncePerThreeDays:
                     return '1日に3回';
                   case NotificationFrequency.oncePerWeek:
                     return '1週間に1回';

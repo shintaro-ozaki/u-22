@@ -14,9 +14,6 @@ class AroundSpotPage extends StatefulWidget {
 }
 
 class _AroundSpotPageState extends State<AroundSpotPage> {
-  // ignore: unused_field
-  GoogleMapController? _googleMapController;
-
   int _selectedIndex = 1;
 
   void _onItemTapped(int index) {
@@ -85,9 +82,6 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
           zoom: 16.0,
         ),
         circles: createCircle(),
-        onMapCreated: (controller) {
-          _googleMapController = controller;
-        },
         // 現在位置にアイコン（青い円形のやつ）を置く
         myLocationEnabled: true,
       );

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 enum NotificationFrequency {
   unspecified,
   oncePerDay,
-  threeTimesPerDay,
+  oncePerThreeDays,
   oncePerWeek,
 }
 

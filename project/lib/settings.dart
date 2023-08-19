@@ -98,7 +98,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       child: Text('1日に1回'),
                     ),
                     const DropdownMenuItem(
-                      value: NotificationFrequency.threeTimesPerDay,
+                      value: NotificationFrequency.oncePerThreeDays,
                       child: Text('1日に3回'),
                     ),
                     const DropdownMenuItem(
@@ -127,8 +127,8 @@ class _SettingsPageState extends State<SettingsPage> {
                             return '指定なし';
                           case NotificationFrequency.oncePerDay:
                             return '1日に1回';
-                          case NotificationFrequency.threeTimesPerDay:
-                            return '1日に3回';
+                          case NotificationFrequency.oncePerThreeDays:
+                            return '3日に1回';
                           case NotificationFrequency.oncePerWeek:
                             return '1週間に1回';
                           default:

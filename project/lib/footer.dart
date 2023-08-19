@@ -12,7 +12,7 @@ import 'dart:convert';
 import './components/amount_provider.dart';
 import './db/database_helper.dart';
 
-late LocationData? currentLocation;
+LocationData? currentLocation;
 
 class Footer extends StatefulWidget {
   final int currentIndex;
@@ -119,8 +119,6 @@ class _Footer extends State<Footer> {
           "codeType": "ORDER_QR",
           "redirectUrl": "main.dart",
           "redirectType": "APP_DEEP_LINK",
-          // "redirectUrl": "",
-          // "redirectType": "WEB_LINK",
           "orderDescription": "募金グループへ",
           "orderItems": [
             {
