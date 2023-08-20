@@ -55,7 +55,7 @@ class _Footer extends State<Footer> {
         // debugPrint(wifiName.toString());
         currentLocation = result;
         if (currentLocation != null) {
-          debugPrint(currentLocation.toString());
+          // debugPrint(currentLocation.toString());
           if (notify && check()) {
             _showNotification();
             notify = false;
