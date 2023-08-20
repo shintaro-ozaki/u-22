@@ -88,7 +88,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
-    final frequencyProvider = Provider.of<FrequencyProvider>(context);
 
     final List<String> frequencyOptions = [
       '指定なし',
