@@ -1,6 +1,13 @@
 # u-22プログラミングコンテスト
 
-## 実行に関して
-この`README.md`と同じ階層で下記のコマンドを実行.
+##　モバイルサイド
+### 実行方法
 
-`make all-start`
+1. この`README.md`と同じ階層で`make all-start`
+
+## バックエンド
+### 実行方法
+
+1. `cd config`
+2. `make dcup`
+3. `make back`
