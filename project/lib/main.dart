@@ -155,7 +155,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
-    final frequencyProvider = Provider.of<FrequencyProvider>(context);
     final currentDate = DateTime.now();
     final weekDateRange = formatWeekDate(currentDate);
 
