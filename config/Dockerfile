@@ -22,6 +22,4 @@ RUN pip3 install \
 
 WORKDIR /work
 
-# COPY ../flask/main.py /work/main.py
-# CMD ["sh", "-c", "cd /work && python3 main.py"]
 CMD ["/bin/bash"]
