@@ -2,16 +2,14 @@ version: '3'
 
 services:
   backend:
-    env_file: .env
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    image: ${IMAGE_NAME}
-    container_name: ${CONTAINER_NAME}
-    hostname: ${HOST_NAME}
+    image: u-22
+    container_name: backend
+    hostname: backend
     volumes:
-      - /Users/${USERNAME}/.ssh:/root/.ssh
-      # - ../:/home/${USERNAME}
+      - ../:/work
     ports:
       - 5001:5001
     tty: true
