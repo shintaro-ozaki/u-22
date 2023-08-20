@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:project/components/location.dart';
+import './components/location.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -44,7 +44,7 @@ class MyApp extends StatelessWidget {
             } else if (snapshot.data == false) {
               return const LockPage(title: '制限モード');
             } else {
-              return const CircularProgressIndicator();
+              return const SizedBox();
             }
           },
         ),
@@ -68,13 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _selectedIndex = index;
     });
-
-    if (index == 0) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ホーム')),
-      );
-    } else if (index == 1) {
+    if (index == 1) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AroundSpotPage()),
@@ -210,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   case NotificationFrequency.oncePerDay:
                     return '1日に1回';
                   case NotificationFrequency.oncePerThreeDays:
-                    return '1日に3回';
+                    return '3日に1回';
                   case NotificationFrequency.oncePerWeek:
                     return '1週間に1回';
                   default:

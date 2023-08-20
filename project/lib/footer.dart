@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:location/location.dart';
 import 'package:network_info_plus/network_info_plus.dart';
+import 'package:project/components/frequency_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
@@ -26,16 +27,12 @@ class _Footer extends State<Footer> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  final info = NetworkInfo();
-
   final Location _locationService = Location();
 
   // 現在位置の監視状況
   StreamSubscription? _locationChangedListen;
 
-  String wifiName = '';
-
-  bool notify = true;
+  final NetworkInfo info = NetworkInfo();
 
   @override
   void initState() {
@@ -48,18 +45,13 @@ class _Footer extends State<Footer> {
     // 現在位置の変化を監視
     _locationChangedListen =
         _locationService.onLocationChanged.listen((LocationData result) async {
-      setState(() {
-        // Future<String?> wifiName = info.getWifiName();
-        // debugPrint(wifiName.toString());
-        final locationProvider =
-            Provider.of<LocationProvider>(context, listen: false);
-        debugPrint(result.toString());
-        locationProvider.updateLocation(result);
-        if (notify && check()) {
-          _showNotification();
-          notify = false;
-        }
-      });
+      final locationProvider =
+          Provider.of<LocationProvider>(context, listen: false);
+      debugPrint(result.toString());
+      locationProvider.updateLocation(result);
+      if (await check()) {
+        _showNotification();
+      }
     });
   }
 
@@ -70,10 +62,41 @@ class _Footer extends State<Footer> {
     _locationChangedListen?.cancel();
   }
 
-  bool check() {
+  Future<bool> check() async {
     final locationProvider =
         Provider.of<LocationProvider>(context, listen: false);
+    final frequencyProvider =
+        Provider.of<FrequencyProvider>(context, listen: false);
     double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
+    // 日時判定
+    String lastPayment =
+        await DatabaseHelper.instance.getLastPaymentTimestamp();
+    debugPrint(lastPayment);
+    if (lastPayment != '') {
+      DateTime lastPaymentTime = DateTime.parse(lastPayment);
+      DateTime lastPaymentTimeZero = DateTime(
+          lastPaymentTime.year, lastPaymentTime.month, lastPaymentTime.day);
+      DateTime nowTime = DateTime.now();
+      switch (frequencyProvider.selectedFrequency) {
+        case NotificationFrequency.unspecified:
+        // no
+        case NotificationFrequency.oncePerDay:
+          DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 1));
+          if (resetTime.isAfter(nowTime)) {
+            return false;
+          }
+        case NotificationFrequency.oncePerThreeDays:
+          DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 3));
+          if (resetTime.isAfter(nowTime)) {
+            return false;
+          }
+        case NotificationFrequency.oncePerWeek:
+          DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 7));
+          if (resetTime.isAfter(nowTime)) {
+            return false;
+          }
+      }
+    }
     // 位置情報判定
     for (Map location in locations) {
       rangeLat = location['radius'] * 0.000009;
@@ -85,8 +108,10 @@ class _Footer extends State<Footer> {
         return true;
       }
     }
-    // wifi判定
-    // if (wifiName == '') {
+    // // wifi判定
+    // String? wifiName = await info.getWifiName();
+    // debugPrint(wifiName);
+    // if (wifiName == 'foo') {
     //   return true;
     // }
     return false;
@@ -110,7 +135,7 @@ class _Footer extends State<Footer> {
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://192.168.10.6:5001/donate'),
+        Uri.parse('http://192.168.10.101:5001/donate'),
         headers: {
           'Content-Type': 'application/json',
         },

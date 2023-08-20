@@ -36,4 +36,4 @@ def smartpay():
 
 if __name__ == "__main__":
     # need to change address where you are located in.
-    app.run(host='192.168.10.6', port=5001, debug=True)
+    app.run(host='192.168.10.101', port=5001, debug=True)

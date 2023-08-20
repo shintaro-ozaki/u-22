@@ -27,11 +27,6 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
         context,
         MaterialPageRoute(builder: (context) => const MyHomePage(title: 'ホーム')),
       );
-    } else if (index == 1) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const AroundSpotPage()),
-      );
     } else if (index == 2) {
       Navigator.pushReplacement(
         context,
@@ -43,11 +38,6 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
   @override
   void initState() {
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   @override

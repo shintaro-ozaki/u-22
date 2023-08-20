@@ -55,4 +55,22 @@ class DatabaseHelper {
 
     return total ?? 0;
   }
+
+  Future<String> getLastPaymentTimestamp() async {
+    Database db = await instance.database;
+    String timestamp = '';
+
+    List<Map<String, dynamic>> result = await db.query(
+      'payments',
+      orderBy: 'timestamp DESC', // 降順にソート
+      limit: 1, // 最初の1行のみを取得
+    );
+
+    if (result.isNotEmpty) {
+      // 最後の支払いのタイムスタンプを取得
+      timestamp = result.first['timestamp'];
+    }
+    // データベースに支払い情報がない場合
+    return timestamp;
+  }
 }

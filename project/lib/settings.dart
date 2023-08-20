@@ -34,11 +34,6 @@ class _SettingsPageState extends State<SettingsPage> {
         context,
         MaterialPageRoute(builder: (context) => const AroundSpotPage()),
       );
-    } else if (index == 2) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SettingsPage()),
-      );
     }
   }
 

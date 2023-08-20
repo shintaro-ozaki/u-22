@@ -9,7 +9,7 @@ enum NotificationFrequency {
 }
 
 class FrequencyProvider extends ChangeNotifier {
-  NotificationFrequency _selectedFrequency = NotificationFrequency.unspecified;
+  NotificationFrequency _selectedFrequency = NotificationFrequency.oncePerDay;
 
   NotificationFrequency get selectedFrequency => _selectedFrequency;
 
