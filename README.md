@@ -1,5 +1,6 @@
 # u-22プログラミングコンテスト
 
 ## 実行に関して
+この``
 
-`make start`
+`make all-start`
