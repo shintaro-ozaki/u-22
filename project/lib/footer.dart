@@ -152,7 +152,7 @@ class _Footer extends State<Footer> {
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://192.168.10.101:5001/donate'),
+        Uri.parse('http://127.0.0.1:5001/donate'),
         headers: {
           'Content-Type': 'application/json',
         },

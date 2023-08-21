@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import './components/location.dart';
@@ -63,6 +62,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
+  final dbInfo = DatabaseInformation.instance;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -78,6 +78,53 @@ class _MyHomePageState extends State<MyHomePage> {
         context,
         MaterialPageRoute(builder: (context) => const SettingsPage()),
       );
+    }
+  }
+
+  Future<void> _onDonateButtonPressed() async {
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
+    final merchantPaymentId = generateRandomString(30);
+    try {
+      final response = await http.post(
+        // need to change address where you are located in.
+        Uri.parse('http://127.0.0.1:5001/donate'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "merchantPaymentId": merchantPaymentId,
+          "codeType": "ORDER_QR",
+          "redirectUrl": "",
+          "redirectType": "WEB_LINK",
+          "orderDescription": "募金グループへ",
+          "orderItems": [
+            {
+              "name": "募金",
+              "category": "pasteries",
+              "quantity": 1,
+              "productId": "67678",
+              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
+            }
+          ],
+          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        final redirectUrl = responseBody['redirectUrl'];
+        // ignore: deprecated_member_use
+        await launch(redirectUrl);
+        await DatabaseHelper.instance.insertPayment({
+          'timestamp': DateTime.now().toIso8601String(),
+          'amount': amountProvider.amount,
+        });
+        setState(() {});
+      } else {
+        debugPrint('寄付が失敗しました');
+      }
+    } catch (e) {
+      debugPrint('エラー: $e');
     }
   }
 
@@ -114,7 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
-    final frequencyProvider = Provider.of<FrequencyProvider>(context);
     final currentDate = DateTime.now();
     final weekDateRange = formatWeekDate(currentDate);
 
@@ -188,69 +234,44 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               },
             ),
-            Text(
-              '現在の金額: ${amountProvider.amount} 円',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Text(
-              '現在の頻度',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              () {
-                switch (frequencyProvider.selectedFrequency) {
-                  case NotificationFrequency.unspecified:
-                    return '指定なし';
-                  case NotificationFrequency.oncePerDay:
-                    return '1日に1回';
-                  case NotificationFrequency.oncePerThreeDays:
-                    return '3日に1回';
-                  case NotificationFrequency.oncePerWeek:
-                    return '1週間に1回';
-                  default:
-                    return 'その他の設定';
+            FutureBuilder<Map<String, dynamic>?>(
+              future: dbInfo.getLastInformation(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  final lastInfo = snapshot.data;
+
+                  int currentAmount = amountProvider.amount;
+                  String currentFrequency = 'Not specified';
+
+                  if (lastInfo != null) {
+                    currentAmount = lastInfo['setamount'] as int;
+                    currentFrequency = lastInfo['frequency'] as String;
+                  }
+
+                  return Column(
+                    children: [
+                      Text(
+                        '現在の金額: $currentAmount 円',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '現在の頻度: $currentFrequency',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  );
                 }
-              }(),
-              style: const TextStyle(fontSize: 16),
+              },
             ),
             Image.asset(
               'assets/images/s2.png',
             ),
-            SizedBox(
-              width: 300,
-              height: 200,
-              child: FutureBuilder<List<FlSpot>>(
-                future: getDataForGraph(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const CircularProgressIndicator();
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    final dataSpots = snapshot.data ?? [];
-
-                    return LineChart(
-                      LineChartData(
-                        titlesData: const FlTitlesData(
-                            // ... Configure your title data here ...
-                            ),
-                        gridData: const FlGridData(show: false),
-                        borderData: FlBorderData(show: false),
-                        lineBarsData: [
-                          LineChartBarData(
-                            spots: dataSpots,
-                            isCurved: true,
-                            color: const Color.fromARGB(255, 63, 169, 255),
-                            dotData: const FlDotData(show: false),
-                            belowBarData: BarAreaData(show: false),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-              ),
-            )
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'db/database_helper.dart';
 import 'footer.dart';
 import 'main.dart';
 import 'map.dart';
@@ -10,14 +11,14 @@ class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
   _SettingsPageState createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 2;
   int _amount = 0;
-  NotificationFrequency _selectedFrequency = NotificationFrequency.unspecified;
+  String _selectedFrequency = '指定なし';
+  final dbInfo = DatabaseInformation.instance;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -43,21 +44,52 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
-  void _applyAmount() {
+  void _apply() async {
     final amountProvider = Provider.of<AmountProvider>(context, listen: false);
-    amountProvider.setAmount(_amount);
-  }
-
-  void _applyFrequency() {
     final frequencyProvider =
         Provider.of<FrequencyProvider>(context, listen: false);
-    frequencyProvider.setSelectedFrequency(_selectedFrequency);
+
+    // Insert data into the database
+    Map<String, dynamic> infoData = {
+      'timestamp': DateTime.now().toString(),
+      'frequency': _selectedFrequency,
+      'setamount': _amount,
+    };
+    int insertedId = await DatabaseInformation.instance.insertInfo(infoData);
+    debugPrint('Inserted data with ID: $insertedId');
+
+    amountProvider.setAmount(_amount);
+
+    NotificationFrequency selectedFrequencyValue;
+    switch (_selectedFrequency) {
+      case '指定なし':
+        selectedFrequencyValue = NotificationFrequency.unspecified;
+        break;
+      case '1日に1回':
+        selectedFrequencyValue = NotificationFrequency.oncePerDay;
+        break;
+      case '1日に3回':
+        selectedFrequencyValue = NotificationFrequency.threeTimesPerDay;
+        break;
+      case '1週間に1回':
+        selectedFrequencyValue = NotificationFrequency.oncePerWeek;
+        break;
+      default:
+        selectedFrequencyValue = NotificationFrequency.unspecified;
+    }
+    frequencyProvider.setSelectedFrequency(selectedFrequencyValue);
   }
 
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
-    final frequencyProvider = Provider.of<FrequencyProvider>(context);
+
+    final List<String> frequencyOptions = [
+      '指定なし',
+      '1日に1回',
+      '1日に3回',
+      '1週間に1回',
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -75,65 +107,26 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 20),
             Column(
               children: [
-                DropdownButton<NotificationFrequency>(
+                const Text(
+                  '通知の頻度を選択してください:',
+                  style: TextStyle(fontSize: 16),
+                ),
+                DropdownButton<String>(
                   value: _selectedFrequency,
                   onChanged: (newValue) {
                     setState(() {
                       _selectedFrequency = newValue!;
                     });
                   },
-                  // ignore: prefer_const_literals_to_create_immutables
-                  items: [
-                    const DropdownMenuItem(
-                      value: NotificationFrequency.unspecified,
-                      child: Text('指定しない'),
-                    ),
-                    const DropdownMenuItem(
-                      value: NotificationFrequency.oncePerDay,
-                      child: Text('1日に1回'),
-                    ),
-                    const DropdownMenuItem(
-                      value: NotificationFrequency.oncePerThreeDays,
-                      child: Text('1日に3回'),
-                    ),
-                    const DropdownMenuItem(
-                      value: NotificationFrequency.oncePerWeek,
-                      child: Text('1週間に1回'),
-                    ),
-                  ],
-                ),
-                ElevatedButton(
-                  onPressed: _applyFrequency,
-                  child: const Text('適用する'),
+                  items: frequencyOptions
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
                 ),
                 const SizedBox(height: 20),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      '現在の頻度',
-                      style: TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold), // 追加
-                    ),
-                    Text(
-                      () {
-                        switch (frequencyProvider.selectedFrequency) {
-                          case NotificationFrequency.unspecified:
-                            return '指定なし';
-                          case NotificationFrequency.oncePerDay:
-                            return '1日に1回';
-                          case NotificationFrequency.oncePerThreeDays:
-                            return '3日に1回';
-                          case NotificationFrequency.oncePerWeek:
-                            return '1週間に1回';
-                          default:
-                            return 'その他の設定';
-                        }
-                      }(),
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -155,12 +148,46 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
             ),
+            FutureBuilder<Map<String, dynamic>?>(
+              future: dbInfo.getLastInformation(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  final lastInfo = snapshot.data;
+
+                  int currentAmount = amountProvider.amount;
+                  String currentFrequency = 'Not specified';
+
+                  if (lastInfo != null) {
+                    currentAmount = lastInfo['setamount'] as int;
+                    currentFrequency = lastInfo['frequency'] as String;
+                  }
+
+                  return Column(
+                    children: [
+                      Text(
+                        '現在の金額: $currentAmount 円',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '現在の頻度: $currentFrequency',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _applyAmount,
-              child: const Text('金額を設定'),
+              onPressed: _apply,
+              child: const Text('設定を反映する'),
             ),
-            Text('現在の金額: ${amountProvider.amount} 円'),
           ],
         ),
       ),
@@ -169,5 +196,20 @@ class _SettingsPageState extends State<SettingsPage> {
         onTap: _onItemTapped,
       ),
     );
+  }
+}
+
+String _getSelectedFrequencyText(NotificationFrequency frequency) {
+  switch (frequency) {
+    case NotificationFrequency.unspecified:
+      return '指定なし';
+    case NotificationFrequency.oncePerDay:
+      return '1日に1回';
+    case NotificationFrequency.threeTimesPerDay:
+      return '1日に3回';
+    case NotificationFrequency.oncePerWeek:
+      return '1週間に1回';
+    default:
+      return 'その他の設定';
   }
 }

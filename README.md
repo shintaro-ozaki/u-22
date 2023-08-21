@@ -1,21 +1,16 @@
-# u-22 プログラミングコンテスト
+# u-22プログラミングコンテスト
 
-Flutter 参考資料
-- [公式サイト(en)](https://docs.flutter.dev/)
-- [公式サイト(ja)](https://www.flutter-study.dev/)
+## モバイルサイド
+### 実行方法
 
-# アイデア
-- 募金アプリの作成
-  - Wi-Fi接続時
-  - スポットに入ったら
+1. この`README.md`と同じ階層で`make all-start`
 
-# 用いる
-- Flutter
-  - Dart
-- PayPayAPI
+## バックエンド
+### 実行方法
 
-# 疑問点
-- ポップアップはどうする?
-- どうやって位置情報を見つけ、通知を送る?
+1. `cp ./flask/.env.sample ./flask/.env`をして、API情報を入力
+2. `cd config`
+3. `make dcup`
+4. `make back`
 
-
+**実機デバイスで実行する場合はIPアドレスの変更が必要**

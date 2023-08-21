@@ -74,3 +74,52 @@ class DatabaseHelper {
     return timestamp;
   }
 }
+
+class DatabaseInformation {
+  static final DatabaseInformation instance =
+      DatabaseInformation._privateConstructor();
+  static Database? _database;
+
+  DatabaseInformation._privateConstructor();
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'info_database.db');
+    return await openDatabase(path, version: 1, onCreate: _onCreate);
+  }
+
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE information (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT,
+        frequency TEXT,
+        setamount INTEGER
+      )
+    ''');
+  }
+
+  Future<Map<String, dynamic>?> getLastInformation() async {
+    final db = await database;
+    List<Map<String, dynamic>> rows = await db.rawQuery(
+      'SELECT * FROM information ORDER BY id DESC LIMIT 1',
+    );
+
+    if (rows.isNotEmpty) {
+      return rows.first;
+    }
+
+    return null;
+  }
+
+  Future<int> insertInfo(Map<String, dynamic> infoData) async {
+    final db = await database;
+    return await db.insert('information', infoData);
+  }
+}
