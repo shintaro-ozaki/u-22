@@ -11,6 +11,12 @@ class LocationProvider with ChangeNotifier {
   }
 }
 
+List<Map> arrived = [];
+
+void initArrived() {
+  arrived.clear();
+}
+
 final List<Map<String, double>> locations = [
   {'lat': 35.612850, 'lng': 139.549127, 'radius': 200.0},
   {'lat': 35.615014, 'lng': 139.542235, 'radius': 100.0},

@@ -22,8 +22,6 @@ class LockPage extends StatefulWidget {
 }
 
 class _LockPageState extends State<LockPage> {
-  Timer? timer;
-
   @override
   void initState() {
     super.initState();
@@ -50,19 +48,44 @@ class _LockPageState extends State<LockPage> {
     super.dispose();
   }
 
+  bool _active = false;
+
+  void _changeSwitch(bool e) => setState(() => _active = e);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: TextButton(
-        child: const Text('botton'),
-        onPressed: () {
-          openAppSettings();
-        },
-      ),
-    );
+        appBar: AppBar(
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          title: Text(widget.title),
+        ),
+        body: Column(
+          children: [
+            SwitchListTile(
+              value: _active,
+              activeColor: Colors.orange,
+              activeTrackColor: Colors.red,
+              inactiveThumbColor: Colors.blue,
+              inactiveTrackColor: Colors.grey,
+              title: const Text('通知'),
+              onChanged: _changeSwitch,
+            ),
+            SwitchListTile(
+              value: _active,
+              activeColor: Colors.orange,
+              activeTrackColor: Colors.red,
+              inactiveThumbColor: Colors.blue,
+              inactiveTrackColor: Colors.grey,
+              title: const Text('位置情報'),
+              onChanged: _changeSwitch,
+            ),
+            TextButton(
+              child: const Text('設定を開く'),
+              onPressed: () {
+                openAppSettings();
+              },
+            ),
+          ],
+        ));
   }
 }

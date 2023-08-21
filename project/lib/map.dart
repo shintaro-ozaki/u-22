@@ -41,6 +41,11 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(

@@ -34,6 +34,8 @@ class _Footer extends State<Footer> {
 
   final NetworkInfo info = NetworkInfo();
 
+  int beforeHour = 0;
+
   @override
   void initState() {
     super.initState();
@@ -49,8 +51,17 @@ class _Footer extends State<Footer> {
           Provider.of<LocationProvider>(context, listen: false);
       debugPrint(result.toString());
       locationProvider.updateLocation(result);
-      if (await check()) {
-        _showNotification();
+      DateTime nowTime = DateTime.now();
+      debugPrint((beforeHour - nowTime.hour).toString());
+      debugPrint(arrived.toString());
+      if (beforeHour - nowTime.hour == 23) {
+        initArrived();
+      }
+      beforeHour = nowTime.hour;
+      if (await checkFrequency(nowTime)) {
+        if (await checkSpot()) {
+          _showNotification();
+        }
       }
     });
   }
@@ -62,24 +73,19 @@ class _Footer extends State<Footer> {
     _locationChangedListen?.cancel();
   }
 
-  Future<bool> check() async {
-    final locationProvider =
-        Provider.of<LocationProvider>(context, listen: false);
+  Future<bool> checkFrequency(DateTime nowTime) async {
     final frequencyProvider =
         Provider.of<FrequencyProvider>(context, listen: false);
-    double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
-    // 日時判定
     String lastPayment =
         await DatabaseHelper.instance.getLastPaymentTimestamp();
-    debugPrint(lastPayment);
+    //debugPrint(lastPayment);
     if (lastPayment != '') {
       DateTime lastPaymentTime = DateTime.parse(lastPayment);
       DateTime lastPaymentTimeZero = DateTime(
           lastPaymentTime.year, lastPaymentTime.month, lastPaymentTime.day);
-      DateTime nowTime = DateTime.now();
       switch (frequencyProvider.selectedFrequency) {
         case NotificationFrequency.unspecified:
-        // no
+          return true;
         case NotificationFrequency.oncePerDay:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 1));
           if (resetTime.isAfter(nowTime)) {
@@ -97,14 +103,25 @@ class _Footer extends State<Footer> {
           }
       }
     }
+    return true;
+  }
+
+  Future<bool> checkSpot() async {
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
+    double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
     // 位置情報判定
     for (Map location in locations) {
+      if (arrived.contains(location)) {
+        continue;
+      }
       rangeLat = location['radius'] * 0.000009;
       rangeLng = location['radius'] * 0.000011;
       diffLat = location['lat'] - locationProvider.currentLocation?.latitude;
       diffLng = location['lng'] - locationProvider.currentLocation?.longitude;
       if ((-rangeLat < diffLat && diffLat < rangeLat) &&
           (-rangeLng < diffLng && diffLng < rangeLng)) {
+        arrived.add(location);
         return true;
       }
     }
