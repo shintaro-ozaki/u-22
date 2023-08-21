@@ -68,8 +68,8 @@ class _SettingsPageState extends State<SettingsPage> {
       case '1日に1回':
         selectedFrequencyValue = NotificationFrequency.oncePerDay;
         break;
-      case '1日に3回':
-        selectedFrequencyValue = NotificationFrequency.threeTimesPerDay;
+      case '3日に1回':
+        selectedFrequencyValue = NotificationFrequency.oncePerThreeDays;
         break;
       case '1週間に1回':
         selectedFrequencyValue = NotificationFrequency.oncePerWeek;
@@ -196,20 +196,5 @@ class _SettingsPageState extends State<SettingsPage> {
         onTap: _onItemTapped,
       ),
     );
-  }
-}
-
-String _getSelectedFrequencyText(NotificationFrequency frequency) {
-  switch (frequency) {
-    case NotificationFrequency.unspecified:
-      return '指定なし';
-    case NotificationFrequency.oncePerDay:
-      return '1日に1回';
-    case NotificationFrequency.threeTimesPerDay:
-      return '1日に3回';
-    case NotificationFrequency.oncePerWeek:
-      return '1週間に1回';
-    default:
-      return 'その他の設定';
   }
 }

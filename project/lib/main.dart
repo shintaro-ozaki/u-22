@@ -1,5 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
+import 'package:http/http.dart' as http;
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -58,6 +63,18 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
+}
+
+String generateRandomString(int length) {
+  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  final random = Random();
+  final StringBuffer buffer = StringBuffer();
+
+  for (int i = 0; i < length; i++) {
+    buffer.write(characters[random.nextInt(characters.length)]);
+  }
+
+  return buffer.toString();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
