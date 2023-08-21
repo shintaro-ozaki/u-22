@@ -25,6 +25,8 @@ def donate():
     print(data)
     response = client.Code.create_qr_code(data)
     output["redirectUrl"] = response['data']['url']
+
+    # outputに1を入れて、1が返ってきたらinsert
     return jsonify(output)
 
 if __name__ == "__main__":

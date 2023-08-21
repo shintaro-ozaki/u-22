@@ -132,12 +132,10 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         setState(() {});
       } else {
-        // ignore: avoid_print
-        print('寄付が失敗しました');
+        debugPrint('寄付が失敗しました');
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('エラー: $e');
+      debugPrint('エラー: $e');
     }
   }
 
