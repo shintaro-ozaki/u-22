@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './components/amount_provider.dart';
 import './db/database_helper.dart';
+import 'lock.dart';
 
 class Footer extends StatefulWidget {
   final int currentIndex;
@@ -44,16 +45,16 @@ class _Footer extends State<Footer> {
     _initializePlatformSpecifics();
     _locationService.enableBackgroundMode(enable: true);
 
-    // 現在位置の変化を監視
+    final locationProvider =
+        Provider.of<LocationProvider>(context, listen: false);
+
+    //現在位置の変化を監視
     _locationChangedListen =
         _locationService.onLocationChanged.listen((LocationData result) async {
-      final locationProvider =
-          Provider.of<LocationProvider>(context, listen: false);
       debugPrint(result.toString());
       locationProvider.updateLocation(result);
       DateTime nowTime = DateTime.now();
       debugPrint((beforeHour - nowTime.hour).toString());
-      debugPrint(arrived.toString());
       if (beforeHour - nowTime.hour == 23) {
         initArrived();
       }
@@ -64,6 +65,24 @@ class _Footer extends State<Footer> {
         }
       }
     });
+
+    // 制限モードへ移行
+    Timer.periodic(
+      // 第一引数：繰り返す間隔の時間を設定
+      const Duration(seconds: 2),
+      // 第二引数：その間隔ごとに動作させたい処理を書く
+      (Timer timer) async {
+        if (!await checkPermission()) {
+          timer.cancel();
+          // ignore: use_build_context_synchronously
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => const LockPage(title: '制限モード')),
+          );
+        }
+      },
+    );
   }
 
   @override

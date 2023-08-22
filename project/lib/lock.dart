@@ -8,8 +8,6 @@ Future<bool> checkPermission() async {
   PermissionStatus permissionLocation = await Permission.location.request();
   PermissionStatus permissionNotification =
       await Permission.notification.request();
-  debugPrint(permissionLocation.toString());
-  debugPrint(permissionNotification.toString());
   return permissionLocation.isGranted && permissionNotification.isGranted;
 }
 

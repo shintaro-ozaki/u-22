@@ -1,10 +1,5 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:http/http.dart' as http;
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -65,18 +60,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-String generateRandomString(int length) {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  final random = Random();
-  final StringBuffer buffer = StringBuffer();
-
-  for (int i = 0; i < length; i++) {
-    buffer.write(characters[random.nextInt(characters.length)]);
-  }
-
-  return buffer.toString();
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   final dbInfo = DatabaseInformation.instance;
@@ -98,53 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _onDonateButtonPressed() async {
-    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
-    final merchantPaymentId = generateRandomString(30);
-    try {
-      final response = await http.post(
-        // need to change address where you are located in.
-        Uri.parse('http://127.0.0.1:5001/donate'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          "merchantPaymentId": merchantPaymentId,
-          "codeType": "ORDER_QR",
-          "redirectUrl": "",
-          "redirectType": "WEB_LINK",
-          "orderDescription": "募金グループへ",
-          "orderItems": [
-            {
-              "name": "募金",
-              "category": "pasteries",
-              "quantity": 1,
-              "productId": "67678",
-              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
-            }
-          ],
-          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final redirectUrl = responseBody['redirectUrl'];
-        // ignore: deprecated_member_use
-        await launch(redirectUrl);
-        await DatabaseHelper.instance.insertPayment({
-          'timestamp': DateTime.now().toIso8601String(),
-          'amount': amountProvider.amount,
-        });
-        setState(() {});
-      } else {
-        debugPrint('寄付が失敗しました');
-      }
-    } catch (e) {
-      debugPrint('エラー: $e');
-    }
-  }
-
   String formatWeekDate(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
     final sunday = monday.add(const Duration(days: 6));
@@ -154,25 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final sundayFormatted = formatter.format(sunday);
 
     return '$mondayFormatted から $sundayFormatted';
-  }
-
-  Future<List<FlSpot>> getDataForGraph() async {
-    final db = await DatabaseHelper.instance.database;
-    final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
-
-    final List<FlSpot> spots = [];
-    for (final row in data) {
-      final timestamp = DateTime.parse(row['timestamp'] as String);
-      final amount = row['amount'] as int;
-
-      // 日付の形式を MM-dd に書式化
-      final dateFormatter = DateFormat('MM-dd');
-      final formattedDate = dateFormatter.format(timestamp);
-
-      spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
-    }
-
-    return spots;
   }
 
   @override
