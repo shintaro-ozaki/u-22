@@ -1,5 +1,5 @@
-name: project
-description: A new Flutter project.
+name: TapNDonate
+description: u-22.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -26,14 +26,21 @@ dependencies:
   location: ^5.0.3
   network_info_plus: ^4.0.2
   flutter_local_notifications: ^15.1.0
+  flutter_launcher_icons: ^0.13.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^2.0.0
+
 flutter:
   uses-material-design: true
 
   assets:
   - assets/images/
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/icon.png"

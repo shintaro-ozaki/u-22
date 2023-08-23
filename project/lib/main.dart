@@ -125,103 +125,101 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Container(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(150),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(255, 192, 192, 192)
-                        .withOpacity(0.5),
-                    spreadRadius: 1,
-                    blurRadius: 1,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(150),
-                child: Image.asset(
-                  'assets/images/banner.jpg',
-                  width: 400,
-                  height: 400,
-                  fit: BoxFit.cover,
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(150),
+              boxShadow: [
+                BoxShadow(
+                  color:
+                      const Color.fromARGB(255, 192, 192, 192).withOpacity(0.5),
+                  spreadRadius: 1,
+                  blurRadius: 1,
                 ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(150),
+              child: Image.asset(
+                'assets/images/banner.jpg',
+                width: 200,
+                height: 200,
+                fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 40),
-            FutureBuilder<int>(
-              future: fetchCumulativeAmount(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final cumulativeAmount = snapshot.data ?? 0;
-                  return Text(
-                    '累計金額: $cumulativeAmount 円',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  );
+          ),
+          const SizedBox(height: 40),
+          FutureBuilder<int>(
+            future: fetchCumulativeAmount(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final cumulativeAmount = snapshot.data ?? 0;
+                return Text(
+                  '累計金額: $cumulativeAmount 円',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                );
+              }
+            },
+          ),
+          FutureBuilder<int>(
+            future: getWeeklyDonationTotal(context),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final weeklyTotal = snapshot.data ?? 0;
+                return Text(
+                  '$weekDateRange の累計額: $weeklyTotal 円',
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                );
+              }
+            },
+          ),
+          FutureBuilder<Map<String, dynamic>?>(
+            future: dbInfo.getLastInformation(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final lastInfo = snapshot.data;
+                int currentAmount = amountProvider.amount;
+                String currentFrequency = '設定画面より指定してください';
+                if (lastInfo != null) {
+                  currentAmount = lastInfo['setamount'] as int;
+                  currentFrequency =
+                      lastInfo['frequency'] as String? ?? "設定画面より指定してください";
                 }
-              },
-            ),
-            FutureBuilder<int>(
-              future: getWeeklyDonationTotal(context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final weeklyTotal = snapshot.data ?? 0;
-                  return Text(
-                    '$weekDateRange の累計額: $weeklyTotal 円',
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  );
-                }
-              },
-            ),
-            FutureBuilder<Map<String, dynamic>?>(
-              future: dbInfo.getLastInformation(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final lastInfo = snapshot.data;
-                  int currentAmount = amountProvider.amount;
-                  String currentFrequency = '設定画面より指定してください';
-                  if (lastInfo != null) {
-                    currentAmount = lastInfo['setamount'] as int;
-                    currentFrequency =
-                        lastInfo['frequency'] as String? ?? "設定画面より指定してください";
-                  }
-                  return Column(
-                    children: [
-                      Text(
-                        '設定金額: $currentAmount 円',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '決済頻度: $currentFrequency',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const Text('届いた通知を押すと、設定した金額を募金することができます')
-                    ],
-                  );
-                }
-              },
-            ),
-          ],
-        ),
+                return Column(
+                  children: [
+                    Text(
+                      '設定金額: $currentAmount 円',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '決済頻度: $currentFrequency',
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const Text('届いた通知を押すと、設定した金額を募金することができます')
+                  ],
+                );
+              }
+            },
+          ),
+        ],
       ),
       bottomNavigationBar: Footer(
         currentIndex: _selectedIndex,

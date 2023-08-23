@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:location/location.dart';
 import 'package:network_info_plus/network_info_plus.dart';
-import 'package:project/components/frequency_provider.dart';
+import './components/frequency_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
