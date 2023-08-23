@@ -110,7 +110,7 @@ class _Footer extends State<Footer> {
           if (resetTime.isAfter(nowTime)) {
             return false;
           }
-        case NotificationFrequency.oncePerThreeDays:
+        case NotificationFrequency.oncePerthreeTimesDays:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 3));
           if (resetTime.isAfter(nowTime)) {
             return false;

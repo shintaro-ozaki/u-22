@@ -17,7 +17,7 @@ void initArrived() {
   arrived.clear();
 }
 
-final List<Map<String, double>> locations = [
+final List<Map<String, dynamic>> locations = [
   {'lat': 35.612850, 'lng': 139.549127, 'radius': 200.0},
   {'lat': 35.615014, 'lng': 139.542235, 'radius': 100.0},
 ];
