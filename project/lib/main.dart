@@ -1,10 +1,5 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:http/http.dart' as http;
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
 import 'package:provider/provider.dart';
 import 'package:sqflite/sqflite.dart';
@@ -65,18 +60,6 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-String generateRandomString(int length) {
-  const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  final random = Random();
-  final StringBuffer buffer = StringBuffer();
-
-  for (int i = 0; i < length; i++) {
-    buffer.write(characters[random.nextInt(characters.length)]);
-  }
-
-  return buffer.toString();
-}
-
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   final dbInfo = DatabaseInformation.instance;
@@ -98,53 +81,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<void> _onDonateButtonPressed() async {
-    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
-    final merchantPaymentId = generateRandomString(30);
-    try {
-      final response = await http.post(
-        // need to change address where you are located in.
-        Uri.parse('http://127.0.0.1:5001/donate'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          "merchantPaymentId": merchantPaymentId,
-          "codeType": "ORDER_QR",
-          "redirectUrl": "",
-          "redirectType": "WEB_LINK",
-          "orderDescription": "募金グループへ",
-          "orderItems": [
-            {
-              "name": "募金",
-              "category": "pasteries",
-              "quantity": 1,
-              "productId": "67678",
-              "unitPrice": {"amount": amountProvider.amount, "currency": "JPY"},
-            }
-          ],
-          "amount": {"amount": amountProvider.amount, "currency": "JPY"},
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        final responseBody = jsonDecode(response.body);
-        final redirectUrl = responseBody['redirectUrl'];
-        // ignore: deprecated_member_use
-        await launch(redirectUrl);
-        await DatabaseHelper.instance.insertPayment({
-          'timestamp': DateTime.now().toIso8601String(),
-          'amount': amountProvider.amount,
-        });
-        setState(() {});
-      } else {
-        debugPrint('寄付が失敗しました');
-      }
-    } catch (e) {
-      debugPrint('エラー: $e');
-    }
-  }
-
   String formatWeekDate(DateTime date) {
     final monday = date.subtract(Duration(days: date.weekday - 1));
     final sunday = monday.add(const Duration(days: 6));
@@ -154,25 +90,6 @@ class _MyHomePageState extends State<MyHomePage> {
     final sundayFormatted = formatter.format(sunday);
 
     return '$mondayFormatted から $sundayFormatted';
-  }
-
-  Future<List<FlSpot>> getDataForGraph() async {
-    final db = await DatabaseHelper.instance.database;
-    final data = await db.rawQuery('SELECT timestamp, amount FROM payments');
-
-    final List<FlSpot> spots = [];
-    for (final row in data) {
-      final timestamp = DateTime.parse(row['timestamp'] as String);
-      final amount = row['amount'] as int;
-
-      // 日付の形式を MM-dd に書式化
-      final dateFormatter = DateFormat('MM-dd');
-      final formattedDate = dateFormatter.format(timestamp);
-
-      spots.add(FlSpot(formattedDate.hashCode.toDouble(), amount.toDouble()));
-    }
-
-    return spots;
   }
 
   @override
@@ -208,11 +125,33 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: SingleChildScrollView(
+      body: Container(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const SizedBox(height: 20),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(150),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color.fromARGB(255, 192, 192, 192)
+                        .withOpacity(0.5),
+                    spreadRadius: 1,
+                    blurRadius: 1,
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(150),
+                child: Image.asset(
+                  'assets/images/s2.png',
+                  width: 400,
+                  height: 200,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
             FutureBuilder<int>(
               future: fetchCumulativeAmount(),
               builder: (context, snapshot) {
@@ -230,10 +169,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 }
               },
             ),
-            Text(
-              '今週の日付範囲: $weekDateRange',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
             FutureBuilder<int>(
               future: getWeeklyDonationTotal(context),
               builder: (context, snapshot) {
@@ -244,7 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 } else {
                   final weeklyTotal = snapshot.data ?? 0;
                   return Text(
-                    '週間の募金累計額: $weeklyTotal 円',
+                    '$weekDateRange の累計額: $weeklyTotal 円',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   );
@@ -260,34 +195,30 @@ class _MyHomePageState extends State<MyHomePage> {
                   return Text('Error: ${snapshot.error}');
                 } else {
                   final lastInfo = snapshot.data;
-
                   int currentAmount = amountProvider.amount;
-                  String currentFrequency = 'Not specified';
-
+                  String currentFrequency = '設定画面より指定してください';
                   if (lastInfo != null) {
                     currentAmount = lastInfo['setamount'] as int;
-                    currentFrequency = lastInfo['frequency'] as String;
+                    currentFrequency =
+                        lastInfo['frequency'] as String? ?? "設定画面より指定してください";
                   }
-
                   return Column(
                     children: [
                       Text(
-                        '現在の金額: $currentAmount 円',
+                        '設定金額: $currentAmount 円',
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '現在の頻度: $currentFrequency',
+                        '決済頻度: $currentFrequency',
                         style: const TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
+                      const Text('届いた通知を押すと、設定した金額を募金することができます')
                     ],
                   );
                 }
               },
-            ),
-            Image.asset(
-              'assets/images/s2.png',
             ),
           ],
         ),

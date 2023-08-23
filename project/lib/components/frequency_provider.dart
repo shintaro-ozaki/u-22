@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 enum NotificationFrequency {
   unspecified,
   oncePerDay,
-  oncePerThreeDays,
+  oncePerthreeTimesDays,
   oncePerWeek,
 }
 
 class FrequencyProvider extends ChangeNotifier {
-  NotificationFrequency _selectedFrequency = NotificationFrequency.oncePerDay;
+  NotificationFrequency _selectedFrequency = NotificationFrequency.unspecified;
 
   NotificationFrequency get selectedFrequency => _selectedFrequency;
 
