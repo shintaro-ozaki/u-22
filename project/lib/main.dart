@@ -144,9 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(150),
                 child: Image.asset(
-                  'assets/images/s2.png',
+                  'assets/images/banner.jpg',
                   width: 400,
-                  height: 200,
+                  height: 400,
                   fit: BoxFit.cover,
                 ),
               ),
