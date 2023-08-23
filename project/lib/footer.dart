@@ -54,7 +54,7 @@ class _Footer extends State<Footer> {
       debugPrint(result.toString());
       locationProvider.updateLocation(result);
       DateTime nowTime = DateTime.now();
-      debugPrint((beforeHour - nowTime.hour).toString());
+      //debugPrint((beforeHour - nowTime.hour).toString());
       if (beforeHour - nowTime.hour == 23) {
         initArrived();
       }
@@ -171,7 +171,7 @@ class _Footer extends State<Footer> {
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://127.0.0.1:5001/donate'),
+        Uri.parse('http://153.120.129.30:5001/donate'),
         headers: {
           'Content-Type': 'application/json',
         },

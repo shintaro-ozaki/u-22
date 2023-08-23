@@ -103,6 +103,12 @@ class DatabaseInformation {
         setamount INTEGER
       )
     ''');
+    final initialInfo = {
+      'timestamp': DateTime.now().toIso8601String(),
+      'frequency': '1日1回',
+      'setamount': 5,
+    };
+    await db.insert('information', initialInfo);
   }
 
   Future<Map<String, dynamic>?> getLastInformation() async {
