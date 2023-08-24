@@ -7,7 +7,6 @@ import './components/frequency_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import './components/location.dart';
-import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import './components/amount_provider.dart';
@@ -35,7 +34,7 @@ class _Footer extends State<Footer> {
 
   final NetworkInfo info = NetworkInfo();
 
-  int beforeHour = 0;
+  DateTime nowTime = DateTime.now();
 
   @override
   void initState() {
@@ -53,13 +52,8 @@ class _Footer extends State<Footer> {
         _locationService.onLocationChanged.listen((LocationData result) async {
       debugPrint(result.toString());
       locationProvider.updateLocation(result);
-      DateTime nowTime = DateTime.now();
-      //debugPrint((beforeHour - nowTime.hour).toString());
-      if (beforeHour - nowTime.hour == 23) {
-        initArrived();
-      }
-      beforeHour = nowTime.hour;
-      if (await checkFrequency(nowTime)) {
+      nowTime = DateTime.now();
+      if (await checkFrequency()) {
         if (await checkSpot()) {
           _showNotification();
         }
@@ -92,7 +86,7 @@ class _Footer extends State<Footer> {
     _locationChangedListen?.cancel();
   }
 
-  Future<bool> checkFrequency(DateTime nowTime) async {
+  Future<bool> checkFrequency() async {
     final frequencyProvider =
         Provider.of<FrequencyProvider>(context, listen: false);
     String lastPayment =
@@ -102,27 +96,28 @@ class _Footer extends State<Footer> {
       DateTime lastPaymentTime = DateTime.parse(lastPayment);
       DateTime lastPaymentTimeZero = DateTime(
           lastPaymentTime.year, lastPaymentTime.month, lastPaymentTime.day);
+      //debugPrint(frequencyProvider.selectedFrequency.toString());
       switch (frequencyProvider.selectedFrequency) {
         case NotificationFrequency.unspecified:
           return true;
         case NotificationFrequency.oncePerDay:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 1));
-          if (resetTime.isAfter(nowTime)) {
-            return false;
+          if (nowTime.isAfter(resetTime)) {
+            return true;
           }
         case NotificationFrequency.oncePerthreeTimesDays:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 3));
-          if (resetTime.isAfter(nowTime)) {
-            return false;
+          if (nowTime.isAfter(resetTime)) {
+            return true;
           }
         case NotificationFrequency.oncePerWeek:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 7));
-          if (resetTime.isAfter(nowTime)) {
-            return false;
+          if (nowTime.isAfter(resetTime)) {
+            return true;
           }
       }
     }
-    return true;
+    return false;
   }
 
   Future<bool> checkSpot() async {
@@ -131,8 +126,12 @@ class _Footer extends State<Footer> {
     double rangeLat = 0.0, diffLat = 0.0, rangeLng = 0.0, diffLng = 0.0;
     // 位置情報判定
     for (Map location in locations) {
-      if (arrived.contains(location)) {
-        continue;
+      if (arrived.containsKey(location['label'])) {
+        if (nowTime.difference(arrived[location['label']]!).inHours > 3) {
+          arrived.remove(location['label']);
+        } else {
+          continue;
+        }
       }
       rangeLat = location['radius'] * 0.000009;
       rangeLng = location['radius'] * 0.000011;
@@ -140,7 +139,7 @@ class _Footer extends State<Footer> {
       diffLng = location['lng'] - locationProvider.currentLocation?.longitude;
       if ((-rangeLat < diffLat && diffLat < rangeLat) &&
           (-rangeLng < diffLng && diffLng < rangeLng)) {
-        arrived.add(location);
+        arrived[location['label']] = nowTime;
         return true;
       }
     }
@@ -153,30 +152,17 @@ class _Footer extends State<Footer> {
     return false;
   }
 
-  String generateRandomString(int length) {
-    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
-    final random = Random();
-    final StringBuffer buffer = StringBuffer();
-
-    for (int i = 0; i < length; i++) {
-      buffer.write(characters[random.nextInt(characters.length)]);
-    }
-
-    return buffer.toString();
-  }
-
   Future<void> _onDonateButtonPressed() async {
-    final merchantPaymentId = generateRandomString(30);
     final amountProvider = Provider.of<AmountProvider>(context, listen: false);
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://153.120.129.30:5001/donate'),
+        Uri.parse('http://153.120.129.30:8491/donate-ozaki-sato'),
         headers: {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          "merchantPaymentId": merchantPaymentId,
+          "merchantPaymentId": "TapNDonate",
           "codeType": "ORDER_QR",
           "redirectUrl": "main.dart",
           "redirectType": "APP_DEEP_LINK",
@@ -216,7 +202,7 @@ class _Footer extends State<Footer> {
 
   void _initializePlatformSpecifics() {
     var initializationSettingsAndroid =
-        const AndroidInitializationSettings('app_icon');
+        const AndroidInitializationSettings('ic_notification');
 
     var initializationSettingsIOS = DarwinInitializationSettings(
       requestAlertPermission: true,

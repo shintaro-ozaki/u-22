@@ -18,12 +18,4 @@ class AmountProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  void setAmount(int newAmount) async {
-    _amount = newAmount;
-    notifyListeners();
-
-    final infoData = {'setamount': newAmount};
-    await DatabaseInformation.instance.insertInfo(infoData);
-  }
 }

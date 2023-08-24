@@ -18,7 +18,7 @@ client.set_assume_merchant(MERCHANT_ID)
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/donate', methods=["POST"])
+@app.route('/donate-ozaki-sato', methods=["POST"])
 def donate():
     output = {}
     data = request.get_json()
@@ -31,4 +31,4 @@ def donate():
 
 if __name__ == "__main__":
     # need to change address where you are located in.
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='153.120.129.30', port=8491, debug=True)

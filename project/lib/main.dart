@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
             } else if (snapshot.data == false) {
               return const LockPage(title: '制限モード');
             } else {
-              return const SizedBox();
+              return const Scaffold(backgroundColor: Colors.white);
             }
           },
         ),
@@ -122,6 +122,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),

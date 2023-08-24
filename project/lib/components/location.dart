@@ -11,15 +11,12 @@ class LocationProvider with ChangeNotifier {
   }
 }
 
-List<Map> arrived = [];
-
-void initArrived() {
-  arrived.clear();
-}
+Map<String, DateTime> arrived = {};
 
 final List<Map<String, dynamic>> locations = [
-  {'lat': 35.612850, 'lng': 139.549127, 'radius': 200.0},
-  {'lat': 35.615014, 'lng': 139.542235, 'radius': 100.0},
+  {'label': '生田キャンパス', 'lat': 35.612850, 'lng': 139.549127, 'radius': 700.0},
+  {'label': '新百合ヶ丘駅', 'lat': 35.60344, 'lng': 139.507754, 'radius': 100.0},
+  {'label': '新宿駅', 'lat': 35.689607, 'lng': 139.700571, 'radius': 150.0},
 ];
 
 Set<Circle> createCircle() {
