@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:location/location.dart';
@@ -102,22 +103,22 @@ class _Footer extends State<Footer> {
           return true;
         case NotificationFrequency.oncePerDay:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 1));
-          if (nowTime.isAfter(resetTime)) {
-            return true;
+          if (nowTime.isBefore(resetTime)) {
+            return false;
           }
         case NotificationFrequency.oncePerthreeTimesDays:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 3));
-          if (nowTime.isAfter(resetTime)) {
-            return true;
+          if (nowTime.isBefore(resetTime)) {
+            return false;
           }
         case NotificationFrequency.oncePerWeek:
           DateTime resetTime = lastPaymentTimeZero.add(const Duration(days: 7));
-          if (nowTime.isAfter(resetTime)) {
-            return true;
+          if (nowTime.isBefore(resetTime)) {
+            return false;
           }
       }
     }
-    return false;
+    return true;
   }
 
   Future<bool> checkSpot() async {
@@ -143,26 +144,39 @@ class _Footer extends State<Footer> {
         return true;
       }
     }
-    // // wifi判定
-    // String? wifiName = await info.getWifiName();
-    // debugPrint(wifiName);
-    // if (wifiName == 'foo') {
-    //   return true;
-    // }
+    // wifi判定
+    String? wifiName = await info.getWifiName();
+    debugPrint(wifiName);
+    if (wifiName == 'foobar') {
+      return true;
+    }
     return false;
   }
 
+  String generateRandomString(int length) {
+    const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    final random = Random();
+    final StringBuffer buffer = StringBuffer();
+
+    for (int i = 0; i < length; i++) {
+      buffer.write(characters[random.nextInt(characters.length)]);
+    }
+
+    return buffer.toString();
+  }
+
   Future<void> _onDonateButtonPressed() async {
+    final merchantPaymentId = generateRandomString(30);
     final amountProvider = Provider.of<AmountProvider>(context, listen: false);
     try {
       final response = await http.post(
         // need to change address where you are located in.
-        Uri.parse('http://153.120.129.30:8491/donate-ozaki-sato'),
+        Uri.parse('http://153.120.129.30:5001/donate'),
         headers: {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          "merchantPaymentId": "TapNDonate",
+          "merchantPaymentId": merchantPaymentId,
           "codeType": "ORDER_QR",
           "redirectUrl": "main.dart",
           "redirectType": "APP_DEEP_LINK",
