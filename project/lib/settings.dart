@@ -93,7 +93,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 Column(
                   children: [
                     const Text(
-                      '通知の頻度を選択してください:',
+                      '決済の頻度を選択してください:',
                       style: TextStyle(fontSize: 16),
                     ),
                     DropdownButton<String>(

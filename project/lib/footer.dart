@@ -56,6 +56,7 @@ class _Footer extends State<Footer> {
       nowTime = DateTime.now();
       if (await checkFrequency()) {
         if (await checkSpot()) {
+          await Future.delayed(const Duration(seconds: 3));
           _showNotification();
         }
       }
@@ -92,12 +93,10 @@ class _Footer extends State<Footer> {
         Provider.of<FrequencyProvider>(context, listen: false);
     String lastPayment =
         await DatabaseHelper.instance.getLastPaymentTimestamp();
-    //debugPrint(lastPayment);
     if (lastPayment != '') {
       DateTime lastPaymentTime = DateTime.parse(lastPayment);
       DateTime lastPaymentTimeZero = DateTime(
           lastPaymentTime.year, lastPaymentTime.month, lastPaymentTime.day);
-      //debugPrint(frequencyProvider.selectedFrequency.toString());
       switch (frequencyProvider.selectedFrequency) {
         case NotificationFrequency.unspecified:
           return true;
@@ -128,7 +127,7 @@ class _Footer extends State<Footer> {
     // 位置情報判定
     for (Map location in locations) {
       if (arrived.containsKey(location['label'])) {
-        if (nowTime.difference(arrived[location['label']]!).inHours > 3) {
+        if (nowTime.difference(arrived[location['label']]!).inMinutes > 20) {
           arrived.remove(location['label']);
         } else {
           continue;
@@ -146,7 +145,6 @@ class _Footer extends State<Footer> {
     }
     // wifi判定
     String? wifiName = await info.getWifiName();
-    debugPrint(wifiName);
     if (wifiName == 'foobar') {
       return true;
     }
@@ -205,12 +203,10 @@ class _Footer extends State<Footer> {
         });
         setState(() {});
       } else {
-        // ignore: avoid_print
-        print('寄付が失敗しました');
+        debugPrint('寄付が失敗しました');
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('エラー: $e');
+      debugPrint('エラー: $e');
     }
   }
 
