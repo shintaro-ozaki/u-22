@@ -49,8 +49,9 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+          centerTitle: true,
           title: const Text(
-            "Google Map page",
+            '周辺のスポット',
             style: TextStyle(color: Colors.black),
           ),
           backgroundColor: Colors.lightGreen),

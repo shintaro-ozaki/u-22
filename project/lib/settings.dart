@@ -70,136 +70,131 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('設定画面'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              '通知設定',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            Column(
+          centerTitle: true,
+          title: const Text(
+            '設定画面',
+            style: TextStyle(color: Colors.black),
+          ),
+          backgroundColor: Colors.orangeAccent),
+      body: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus(); // フォーカスを外す
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  '通知の頻度を選択してください:',
-                  style: TextStyle(fontSize: 16),
-                ),
-                DropdownButton<String>(
-                  value: _newFrequency,
-                  onChanged: (newValue) {
-                    NotificationFrequency selectedFrequencyValue =
-                        _convertToNotificationFrequency(newValue!);
-                    setState(() {
-                      _newFrequency = newValue;
-                      frequencyProvider
-                          .setSelectedFrequency(selectedFrequencyValue);
-                    });
-                  },
-                  items: frequencyOptions
-                      .map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
+                  '通知設定',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 20),
+                Column(
+                  children: [
+                    const Text(
+                      '通知の頻度を選択してください:',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    DropdownButton<String>(
+                      value: _newFrequency,
+                      onChanged: (newValue) {
+                        NotificationFrequency selectedFrequencyValue =
+                            convertToNotificationFrequency(newValue!);
+                        setState(() {
+                          _newFrequency = newValue;
+                          frequencyProvider
+                              .setSelectedFrequency(selectedFrequencyValue);
+                        });
+                      },
+                      items: frequencyOptions
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  '募金金額を設定する',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    prefixText: '¥',
+                    suffixText: '円',
+                    errorText: _isAmountValid ? null : '1円から100円までの整数を入力してください',
+                  ),
+                  onChanged: (value) {
+                    final amount = int.tryParse(value);
+                    setState(() {
+                      if (value.isEmpty) {
+                        _isAmountValid = false;
+                      } else if (amount != null &&
+                          amount >= 1 &&
+                          amount <= 100) {
+                        _updateAmount(amount);
+                        _isAmountValid = true;
+                      } else {
+                        _isAmountValid = false;
+                      }
+                    });
+                  },
+                ),
+                FutureBuilder<Map<String, dynamic>?>(
+                  future: dbInfo.getLastInformation(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}');
+                    } else {
+                      final lastInfo = snapshot.data;
+
+                      int currentAmount = amountProvider.amount;
+                      String currentFrequency = '指定してください';
+
+                      if (lastInfo != null) {
+                        currentAmount = lastInfo['setamount'] as int;
+                        currentFrequency =
+                            lastInfo['frequency'] as String? ?? '反映されてません';
+                      }
+                      return Column(
+                        children: [
+                          Text(
+                            '現在の金額: $currentAmount 円',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '現在の頻度: $currentFrequency',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      );
+                    }
+                  },
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  // 金額が正しくないときはボタンが無効
+                  onPressed: _isAmountValid ? _apply : null,
+                  child: const Text('設定を反映する'),
+                ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Text(
-              '募金金額を設定する',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            TextField(
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                prefixText: '¥',
-                suffixText: '円',
-                errorText: _isAmountValid ? null : '1円から100円までの整数を入力してください',
-              ),
-              onChanged: (value) {
-                final amount = int.tryParse(value);
-                setState(() {
-                  if (value.isEmpty) {
-                    _isAmountValid = false;
-                  } else if (amount != null && amount >= 1 && amount <= 100) {
-                    _updateAmount(amount);
-                    _isAmountValid = true;
-                  } else {
-                    _isAmountValid = false;
-                  }
-                });
-              },
-            ),
-            FutureBuilder<Map<String, dynamic>?>(
-              future: dbInfo.getLastInformation(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final lastInfo = snapshot.data;
-
-                  int currentAmount = amountProvider.amount;
-                  String currentFrequency = '指定してください';
-
-                  if (lastInfo != null) {
-                    currentAmount = lastInfo['setamount'] as int;
-                    currentFrequency =
-                        lastInfo['frequency'] as String? ?? '反映されてません';
-                  }
-                  return Column(
-                    children: [
-                      Text(
-                        '現在の金額: $currentAmount 円',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '現在の頻度: $currentFrequency',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              // 金額が正しくないときはボタンが無効
-              onPressed: _isAmountValid ? _apply : null,
-              child: const Text('設定を反映する'),
-            ),
-          ],
-        ),
-      ),
+          )),
       bottomNavigationBar: Footer(
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
     );
-  }
-}
-
-NotificationFrequency _convertToNotificationFrequency(String value) {
-  switch (value) {
-    case '指定なし':
-      return NotificationFrequency.unspecified;
-    case '1日に1回':
-      return NotificationFrequency.oncePerDay;
-    case '3日に1回':
-      return NotificationFrequency.oncePerthreeTimesDays;
-    case '1週間に1回':
-      return NotificationFrequency.oncePerWeek;
-    default:
-      return NotificationFrequency.unspecified;
   }
 }

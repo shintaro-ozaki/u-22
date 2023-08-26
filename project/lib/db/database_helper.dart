@@ -105,7 +105,7 @@ class DatabaseInformation {
     ''');
     final initialInfo = {
       'timestamp': DateTime.now().toIso8601String(),
-      'frequency': '1日1回',
+      'frequency': '1日に1回',
       'setamount': 5,
     };
     await db.insert('information', initialInfo);
