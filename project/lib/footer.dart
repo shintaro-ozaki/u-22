@@ -51,7 +51,6 @@ class _Footer extends State<Footer> {
     //現在位置の変化を監視
     _locationChangedListen =
         _locationService.onLocationChanged.listen((LocationData result) async {
-      //debugPrint(result.toString());
       locationProvider.updateLocation(result);
       nowTime = DateTime.now();
       if (await checkFrequency()) {

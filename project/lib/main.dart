@@ -181,6 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+              const SizedBox(height: 60),
               FutureBuilder<int>(
                 future: fetchCumulativeAmount(),
                 builder: (context, snapshot) {

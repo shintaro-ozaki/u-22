@@ -17,6 +17,7 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 2;
+  final amountProvider = AmountProvider();
   int _amount = 0;
   String _newFrequency = '指定なし';
   final dbInfo = DatabaseInformation.instance;
@@ -131,6 +132,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
+                    hintText: '${amountProvider.amount}',
                     prefixText: '¥',
                     errorText: _isAmountValid ? null : '1円から100円までの整数を入力してください',
                   ),
