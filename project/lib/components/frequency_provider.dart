@@ -42,7 +42,6 @@ class FrequencyProvider extends ChangeNotifier {
     }
   }
 
-  // ここいる？
   void setSelectedFrequency(NotificationFrequency frequency) {
     _selectedFrequency = frequency;
     notifyListeners();

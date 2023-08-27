@@ -32,11 +32,17 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'My App',
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+            appBarTheme: const AppBarTheme(
+              titleTextStyle: TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+              centerTitle: true,
+            )),
         home: FutureBuilder(
-          future: checkPermission(),
+          future: firstPermission(),
           builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
             if (snapshot.data == true) {
               return const MyHomePage(title: 'ホーム');
@@ -128,27 +134,30 @@ class _MyHomePageState extends State<MyHomePage> {
       final currentDate = DateTime.now();
       final monday =
           currentDate.subtract(Duration(days: currentDate.weekday - 1));
-      final sunday = monday.add(const Duration(days: 6));
+      final mondayZero = DateTime(monday.year, monday.month, monday.day);
+      final weekEnd = mondayZero.add(const Duration(days: 7));
 
       final total = Sqflite.firstIntValue(await db.rawQuery('''
     SELECT SUM(amount) FROM payments
     WHERE timestamp BETWEEN ? AND ?
-  ''', [monday.toIso8601String(), sunday.toIso8601String()]));
+  ''', [mondayZero.toIso8601String(), weekEnd.toIso8601String()]));
       return total ?? 0;
     }
 
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
+        title: Text(
+          widget.title,
+          style: TextStyle(fontSize: getFontSize(0.06)),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
           child: Column(
             children: <Widget>[
-              const SizedBox(height: 20),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.04),
               Container(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(150),
@@ -171,6 +180,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 ),
               ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.06),
               const SizedBox(height: 60),
               FutureBuilder<int>(
                 future: fetchCumulativeAmount(),
@@ -194,7 +204,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ),
                           ),
                           SizedBox(
-                            width: MediaQuery.of(context).size.width * 0.45,
+                            width: MediaQuery.of(context).size.width * 0.43,
                           ),
                           Icon(
                             Icons.attach_money,
@@ -262,7 +272,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             ],
                           ),
                           SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.245),
+                              width: MediaQuery.of(context).size.width * 0.211),
                           Row(
                             children: [
                               Icon(
@@ -327,7 +337,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               ),
                               SizedBox(
                                   width: MediaQuery.of(context).size.width *
-                                      0.385),
+                                      0.375),
                               Icon(
                                 Icons.attach_money,
                                 size: getFontSize(0.05),
@@ -368,8 +378,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 ),
                               ),
                               SizedBox(
-                                  width: MediaQuery.of(context).size.width *
-                                      0.365),
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.37),
                               Text(
                                 currentFrequency,
                                 style: TextStyle(

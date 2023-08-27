@@ -18,10 +18,4 @@ class AmountProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-
-  // 外部からアクセス可能なメソッドとしてsetAmountを定義します
-  void setAmount(int newAmount) {
-    _amount = newAmount;
-    notifyListeners();
-  }
 }
