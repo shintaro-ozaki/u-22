@@ -251,8 +251,8 @@ class _Footer extends State<Footer> {
 
     await flutterLocalNotificationsPlugin.show(
       0, // Notification ID
-      '募金しますか？', // Notification Title
-      null, // Notification Body, set as null to remove the body
+      '募金スポットに入りました', // Notification Title
+      'この通知を押すと決済が始まります', // Notification Body, set as null to remove the body
       platformChannelSpecifics,
       payload: 'New Payload', // Notification Payload
     );

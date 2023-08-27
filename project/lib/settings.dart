@@ -26,7 +26,19 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     final amountProvider = Provider.of<AmountProvider>(context, listen: false);
+    final frequencyProvider =
+        Provider.of<FrequencyProvider>(context, listen: false);
     _amount = amountProvider.amount;
+    switch (frequencyProvider.selectedFrequency) {
+      case NotificationFrequency.unspecified:
+        _newFrequency = '指定なし';
+      case NotificationFrequency.oncePerDay:
+        _newFrequency = '1日に1回';
+      case NotificationFrequency.oncePerthreeTimesDays:
+        _newFrequency = '3日に1回';
+      case NotificationFrequency.oncePerWeek:
+        _newFrequency = '1週間に1回';
+    }
   }
 
   void _onItemTapped(int index) {
@@ -76,6 +88,10 @@ class _SettingsPageState extends State<SettingsPage> {
     amountProvider.setAmount(_amount);
   }
 
+  double getFontSize(double coefficient) {
+    return MediaQuery.of(context).size.width * coefficient;
+  }
+
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context, listen: false);
@@ -90,9 +106,9 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
           centerTitle: true,
-          title: const Text(
+          title: Text(
             '設定画面',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(fontSize: getFontSize(0.06)),
           ),
           backgroundColor: Colors.orangeAccent),
       body: GestureDetector(
@@ -104,74 +120,18 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '・ 頻度だけの変更はできません。',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(fontSize: 11),
-                      ),
-                      Text(
-                        '・ 変更させる場合は金額とともに変更させる必要があります',
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(fontSize: 11),
-                      ),
-                    ],
-                  ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.03),
+                Text(
+                  '設定金額',
+                  style: TextStyle(
+                      fontSize: getFontSize(0.06), fontWeight: FontWeight.bold),
                 ),
-                const Text(
-                  '通知設定',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 20),
-                Column(
-                  children: [
-                    const Text(
-                      '通知の頻度を選択してください:',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    DropdownButton<String>(
-                      value: _newFrequency,
-                      onChanged: (newValue) {
-                        // ignore: unused_local_variable
-                        NotificationFrequency selectedFrequencyValue =
-                            convertToNotificationFrequency(newValue!);
-                        setState(() {
-                          _newFrequency = newValue;
-                        });
-                      },
-                      items: frequencyOptions
-                          .map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  '募金金額を設定する',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 TextField(
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    hintText: '${amountProvider.amount}',
                     prefixText: '¥',
-                    suffixText: '円',
                     errorText: _isAmountValid ? null : '1円から100円までの整数を入力してください',
                   ),
                   onChanged: (value) {
@@ -191,6 +151,55 @@ class _SettingsPageState extends State<SettingsPage> {
                     });
                   },
                 ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
+                Text(
+                  '決済頻度',
+                  style: TextStyle(
+                      fontSize: getFontSize(0.06), fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+                Row(
+                  children: [
+                    DropdownButton<String>(
+                      value: _newFrequency,
+                      onChanged: (newValue) {
+                        // ignore: unused_local_variable
+                        NotificationFrequency selectedFrequencyValue =
+                            convertToNotificationFrequency(newValue!);
+                        setState(() {
+                          _newFrequency = newValue;
+                        });
+                      },
+                      items: frequencyOptions
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                    SizedBox(width: MediaQuery.of(context).size.width * 0.2),
+                    ElevatedButton(
+                      // 金額が正しくないときはボタンが無効
+                      onPressed: _isAmountValid ? _apply : null,
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Colors.lightBlueAccent,
+                      ),
+                      child: const Text(
+                        '設定を反映する',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.1),
+                Text(
+                  '現在の設定',
+                  style: TextStyle(
+                      fontSize: getFontSize(0.06), fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.02),
                 FutureBuilder<Map<String, dynamic>?>(
                   future: dbInfo.getLastInformation(),
                   builder: (context, snapshot) {
@@ -209,28 +218,68 @@ class _SettingsPageState extends State<SettingsPage> {
                         currentFrequency =
                             lastInfo['frequency'] as String? ?? '反映されてません';
                       }
-                      return Column(
+
+                      return Table(
+                        columnWidths: {
+                          0: FixedColumnWidth(
+                              MediaQuery.of(context).size.width * 0.3),
+                          1: FixedColumnWidth(
+                              MediaQuery.of(context).size.width * 0.3),
+                        },
+                        border: TableBorder.all(),
                         children: [
-                          Text(
-                            '現在の金額: $currentAmount 円',
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                          TableRow(
+                            children: [
+                              TableCell(
+                                  child: Container(
+                                alignment: Alignment.centerRight, // 右詰にする
+                                child: Text(
+                                  '設定金額',
+                                  style: TextStyle(
+                                      fontSize: getFontSize(0.05),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                              TableCell(
+                                  child: Container(
+                                alignment: Alignment.centerRight, // 右詰にする
+                                child: Text(
+                                  '$currentAmount円',
+                                  style: TextStyle(
+                                      fontSize: getFontSize(0.05),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                            ],
                           ),
-                          Text(
-                            '現在の頻度: $currentFrequency',
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                          TableRow(
+                            children: [
+                              TableCell(
+                                  child: Container(
+                                alignment: Alignment.centerRight, // 右詰にする
+                                child: Text(
+                                  '決済頻度',
+                                  style: TextStyle(
+                                      fontSize: getFontSize(0.05),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                              TableCell(
+                                  child: Container(
+                                alignment: Alignment.centerRight, // 右詰にする
+                                child: Text(
+                                  currentFrequency,
+                                  style: TextStyle(
+                                      fontSize: getFontSize(0.05),
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              )),
+                            ],
                           ),
                         ],
                       );
                     }
                   },
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  // 金額が正しくないときはボタンが無効
-                  onPressed: _isAmountValid ? _apply : null,
-                  child: const Text('設定を反映する'),
                 ),
               ],
             ),

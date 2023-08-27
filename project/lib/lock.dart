@@ -4,10 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'main.dart';
 
-Future<bool> checkPermission() async {
+Future<bool> firstPermission() async {
   PermissionStatus permissionLocation = await Permission.location.request();
   PermissionStatus permissionNotification =
       await Permission.notification.request();
+  return permissionLocation.isGranted && permissionNotification.isGranted;
+}
+
+Future<bool> checkPermission() async {
+  PermissionStatus permissionLocation = await Permission.location.status;
+  PermissionStatus permissionNotification =
+      await Permission.notification.status;
   return permissionLocation.isGranted && permissionNotification.isGranted;
 }
 
@@ -69,26 +76,43 @@ class _LockPageState extends State<LockPage> {
         ),
         body: Column(
           children: [
-            SwitchListTile(
-                value: statusLocation,
-                activeColor: Colors.blue,
-                inactiveThumbColor: Colors.grey,
-                title: statusLocation
-                    ? const Text('位置情報は許可されています')
-                    : const Text('位置情報が許可されていません'),
-                onChanged: (bool value) {}),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.03),
             SwitchListTile(
               value: statusNotification,
               activeColor: Colors.blue,
               inactiveThumbColor: Colors.grey,
               title: statusNotification
-                  ? const Text('通知は許可されています')
-                  : const Text('通知が許可されていません'),
+                  ? const Text('通知は許可されています',
+                      style: TextStyle(fontWeight: FontWeight.bold))
+                  : const Text('通知が許可されていません',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
               onChanged: (bool value) {},
             ),
-            const SizedBox(
-              height: 20,
+            SwitchListTile(
+                value: statusLocation,
+                activeColor: Colors.blue,
+                inactiveThumbColor: Colors.grey,
+                title: statusLocation
+                    ? const Text('位置情報は許可されています',
+                        style: TextStyle(fontWeight: FontWeight.bold))
+                    : const Text('位置情報が許可されていません',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                onChanged: (bool value) {}),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.06),
+            Text(
+              '以下のように設定してください',
+              style: TextStyle(
+                fontSize: getFontSize(0.05),
+                fontWeight: FontWeight.bold,
+              ),
             ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+            Image.asset(
+              'assets/images/setting.jpg',
+              width: MediaQuery.of(context).size.height * 0.6,
+              height: MediaQuery.of(context).size.width * 0.6,
+            ),
+            SizedBox(height: MediaQuery.of(context).size.height * 0.04),
             ElevatedButton.icon(
               icon: const Icon(
                 Icons.settings,
@@ -102,17 +126,6 @@ class _LockPageState extends State<LockPage> {
               onPressed: () {
                 openAppSettings();
               },
-            ),
-            const SizedBox(
-              height: 20,
-            ),
-            const Text('以下のように設定してください'),
-            ClipRRect(
-              child: Image.asset(
-                'assets/images/setting.jpg',
-                width: 300,
-                height: 300,
-              ),
             ),
           ],
         ));

@@ -14,9 +14,6 @@ class LocationProvider with ChangeNotifier {
 Map<String, DateTime> arrived = {};
 
 final List<Map<String, dynamic>> locations = [
-  {'label': '生田駅', 'lat': 35.615014, 'lng': 139.542235, 'radius': 100.0},
-  {'label': '新百合ヶ丘駅', 'lat': 35.60344, 'lng': 139.507754, 'radius': 100.0},
-  {'label': 'tmp', 'lat': 35.61243, 'lng': 139.541453, 'radius': 50.0},
   // 東京
   {'label': '新宿駅', 'lat': 35.689607, 'lng': 139.700571, 'radius': 200.0},
   {'label': '渋谷駅', 'lat': 35.658034, 'lng': 139.701636, 'radius': 200.0},
@@ -28,7 +25,6 @@ final List<Map<String, dynamic>> locations = [
   {'label': '東京ビッグサイト', 'lat': 35.632141, 'lng': 139.797464, 'radius': 250.0},
   {'label': '国立競技場', 'lat': 35.677824, 'lng': 139.714541, 'radius': 200.0},
   {'label': '代々木公園', 'lat': 35.671587, 'lng': 139.696703, 'radius': 300.0},
-
   // 全国
   {'label': '新千歳空港', 'lat': 42.77913, 'lng': 141.686637, 'radius': 1000.0},
   {'label': '仙台駅', 'lat': 38.260132, 'lng': 140.882438, 'radius': 200.0},
