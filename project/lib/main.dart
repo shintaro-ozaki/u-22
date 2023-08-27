@@ -191,6 +191,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 76, 79, 255),
                               ),
                             ),
                             const Text(
@@ -256,6 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 76, 79, 255),
                               ),
                             ),
                             const Text(
@@ -313,6 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: const TextStyle(
                                 fontSize: 30,
                                 fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 255, 0, 0),
                               ),
                             ),
                             const Text(
@@ -343,6 +346,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
+                                color: Color.fromARGB(255, 255, 0, 0),
                               ),
                             ),
                           ],
@@ -356,8 +360,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Column(
-                          crossAxisAlignment:
-                              CrossAxisAlignment.start, // テキストを左寄せに配置
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               '・ 届いた通知を押すと、設定した金額を募金することができます',
@@ -366,7 +369,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               style: TextStyle(fontSize: 11),
                             ),
                             Text(
-                              '・ 金額や頻度は設定画面より変更することができます',
+                              '・ 設定した金額や頻度は設定画面より変更することができます',
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                               style: TextStyle(fontSize: 11),
