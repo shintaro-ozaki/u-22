@@ -17,7 +17,6 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 2;
-  final amountProvider = AmountProvider();
   int _amount = 0;
   String _newFrequency = '指定なし';
   final dbInfo = DatabaseInformation.instance;
@@ -26,6 +25,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
     _amount = amountProvider.amount;
   }
 
