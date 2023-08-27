@@ -24,7 +24,7 @@ NotificationFrequency convertToNotificationFrequency(String value) {
 }
 
 class FrequencyProvider extends ChangeNotifier {
-  NotificationFrequency _selectedFrequency = NotificationFrequency.oncePerDay;
+  NotificationFrequency _selectedFrequency = NotificationFrequency.oncePerWeek;
 
   FrequencyProvider() {
     _initializeFrequencyFromDatabase();

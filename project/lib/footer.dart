@@ -51,7 +51,7 @@ class _Footer extends State<Footer> {
     //現在位置の変化を監視
     _locationChangedListen =
         _locationService.onLocationChanged.listen((LocationData result) async {
-      debugPrint(result.toString());
+      // debugPrint(result.toString());
       locationProvider.updateLocation(result);
       nowTime = DateTime.now();
       if (await checkFrequency()) {
@@ -146,7 +146,7 @@ class _Footer extends State<Footer> {
     }
     // wifi判定
     String? wifiName = await info.getWifiName();
-    debugPrint(wifiName);
+    // debugPrint(wifiName);
     if (wifiName == 'foobar') {
       return true;
     }
@@ -278,6 +278,9 @@ class _Footer extends State<Footer> {
       iconSize: 24,
       selectedFontSize: 15,
       unselectedFontSize: 10,
+      backgroundColor: const Color.fromARGB(255, 255, 236, 243),
+      selectedItemColor: Colors.black,
+      unselectedItemColor: Colors.grey,
     );
   }
 }
