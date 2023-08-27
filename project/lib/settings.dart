@@ -85,6 +85,30 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '・ 届いた通知を押すと、設定した金額を募金することができます',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        '・ 設定した金額や頻度は設定画面より変更することができます',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
                 const Text(
                   '通知設定',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

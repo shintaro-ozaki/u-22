@@ -63,6 +63,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
   final dbInfo = DatabaseInformation.instance;
+  String lastPaymentTimestamp = '';
 
   void _onItemTapped(int index) {
     setState(() {
@@ -95,8 +96,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final amountProvider = Provider.of<AmountProvider>(context);
-    // final currentDate = DateTime.now();
-    // final weekDateRange = formatWeekDate(currentDate);
+
+    Future<String> fetchLastPaymentTimestamp() async {
+      String timestamp =
+          await DatabaseHelper.instance.getLastPaymentTimestamp();
+      debugPrint(timestamp);
+      if (timestamp == '') {
+        return '無し';
+      } else {
+        final formatter = DateFormat('MM月dd日');
+        return formatter.format(timestamp as DateTime);
+      }
+    }
 
     Future<int> fetchCumulativeAmount() async {
       final allPayments = await DatabaseHelper.instance.getAllPayments();
@@ -352,7 +363,45 @@ class _MyHomePageState extends State<MyHomePage> {
                           ],
                         ),
                       ),
-                      const SizedBox(height: 50),
+                      const SizedBox(height: 20),
+                      FutureBuilder<String>(
+                        future: fetchLastPaymentTimestamp(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            final lastPaymentText =
+                                snapshot.data ?? 'まだ募金をしていません';
+                            return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Row(
+                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      '最後に募金した日',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 140),
+                                    Text(
+                                      lastPaymentText,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ));
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
