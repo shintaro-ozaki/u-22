@@ -65,6 +65,10 @@ class _MyHomePageState extends State<MyHomePage> {
   final dbInfo = DatabaseInformation.instance;
   String lastPaymentTimestamp = '';
 
+  double getFontSize(double coefficient) {
+    return MediaQuery.of(context).size.width * coefficient;
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -100,12 +104,14 @@ class _MyHomePageState extends State<MyHomePage> {
     Future<String> fetchLastPaymentTimestamp() async {
       String timestamp =
           await DatabaseHelper.instance.getLastPaymentTimestamp();
-      debugPrint(timestamp);
       if (timestamp == '') {
         return '無し';
       } else {
+        DateTime dateTimeTimestamp =
+            DateTime.parse(timestamp); // StringをDateTimeに変換
         final formatter = DateFormat('MM月dd日');
-        return formatter.format(timestamp as DateTime);
+        String formattedDate = formatter.format(dateTimeTimestamp);
+        return formattedDate;
       }
     }
 
@@ -137,301 +143,330 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10), // 左右のパディングを追加
-        // mainAxisAlignment: MainAxisAlignment.center,
-        child: Column(
-          children: <Widget>[
-            const SizedBox(height: 20),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(150),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color.fromARGB(255, 192, 192, 192)
-                        .withOpacity(0.5),
-                    spreadRadius: 1,
-                    blurRadius: 1,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Column(
+            children: <Widget>[
+              const SizedBox(height: 20),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(150),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 192, 192, 192)
+                          .withOpacity(0.5),
+                      spreadRadius: 1,
+                      blurRadius: 1,
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(150),
+                  child: Image.asset(
+                    'assets/images/banner.jpg',
+                    width: MediaQuery.of(context).size.width * 0.55,
+                    height: MediaQuery.of(context).size.width * 0.55,
+                    fit: BoxFit.cover,
                   ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(150),
-                child: Image.asset(
-                  'assets/images/banner.jpg',
-                  width: 200,
-                  height: 200,
-                  fit: BoxFit.cover,
                 ),
               ),
-            ),
-            const SizedBox(height: 60),
-            FutureBuilder<int>(
-              future: fetchCumulativeAmount(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final cumulativeAmount = snapshot.data ?? 0;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16), // 左右のパディングを追加
-                    // mainAxisAlignment: MainAxisAlignment.center,
-                    child: Row(
+              const SizedBox(height: 60),
+              FutureBuilder<int>(
+                future: fetchCumulativeAmount(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    final cumulativeAmount = snapshot.data ?? 0;
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * 0.04),
+                      child: Row(
+                        children: [
+                          Text(
+                            '累計額',
+                            style: TextStyle(
+                              fontSize: getFontSize(0.05),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width * 0.45,
+                          ),
+                          Icon(
+                            Icons.attach_money,
+                            size: getFontSize(0.05),
+                            color: Colors.blue,
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                cumulativeAmount.toString(),
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.08),
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color.fromARGB(255, 76, 79, 255),
+                                ),
+                              ),
+                              Text(
+                                ' 円',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              FutureBuilder<int>(
+                future: getWeeklyDonationTotal(context),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    final weeklyTotal = snapshot.data ?? 0;
+                    return Padding(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * 0.04),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '今週の累計額',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                formatWeekDate(DateTime.now()).toString(),
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.03),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.245),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.attach_money,
+                                size: getFontSize(0.05),
+                                color: Colors.blue, // お好きな色を選んでください
+                              ),
+                              Text(
+                                weeklyTotal.toString(),
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.08),
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color.fromARGB(255, 76, 79, 255),
+                                ),
+                              ),
+                              Text(
+                                ' 円',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+              ),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
+              FutureBuilder<Map<String, dynamic>?>(
+                future: dbInfo.getLastInformation(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    final lastInfo = snapshot.data;
+                    int currentAmount = amountProvider.amount;
+                    String currentFrequency = '設定画面より指定してください';
+                    if (lastInfo != null) {
+                      currentAmount = lastInfo['setamount'] as int;
+                      currentFrequency =
+                          lastInfo['frequency'] as String? ?? "1";
+                    }
+                    return Column(
                       children: [
-                        const Text(
-                          '累計額',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.04),
+                          child: Row(
+                            children: [
+                              Text(
+                                '設定金額',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.385),
+                              Icon(
+                                Icons.attach_money,
+                                size: getFontSize(0.05),
+                                color: Colors.blue, // お好きな色を選んでください
+                              ),
+                              Text(
+                                '$currentAmount',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.08),
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color.fromARGB(255, 255, 0, 0),
+                                ),
+                              ),
+                              Text(
+                                ' 円',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 190), // テキスト間のスペーシング
-                        const Icon(
-                          Icons.attach_money,
-                          size: 24,
-                          color: Colors.blue, // お好きな色を選んでください
+                        SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.02,
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              cumulativeAmount.toString(),
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 76, 79, 255),
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal:
+                                  MediaQuery.of(context).size.width * 0.04),
+                          child: Row(
+                            children: [
+                              Text(
+                                '決済頻度',
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              ' 円',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                              SizedBox(
+                                  width: MediaQuery.of(context).size.width *
+                                      0.365),
+                              Text(
+                                currentFrequency,
+                                style: TextStyle(
+                                  fontSize: getFontSize(0.05),
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color.fromARGB(255, 255, 0, 0),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            FutureBuilder<int>(
-              future: getWeeklyDonationTotal(context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final weeklyTotal = snapshot.data ?? 0;
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16), // 左右のパディングを追加
-                    child: Row(
-                      // crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              '今週の累計額',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              formatWeekDate(DateTime.now()).toString(),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 100),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.attach_money,
-                              size: 24,
-                              color: Colors.blue, // お好きな色を選んでください
-                            ),
-                            Text(
-                              weeklyTotal.toString(),
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 76, 79, 255),
-                              ),
-                            ),
-                            const Text(
-                              ' 円',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 20),
-            FutureBuilder<Map<String, dynamic>?>(
-              future: dbInfo.getLastInformation(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  final lastInfo = snapshot.data;
-                  int currentAmount = amountProvider.amount;
-                  String currentFrequency = '設定画面より指定してください';
-                  if (lastInfo != null) {
-                    currentAmount = lastInfo['setamount'] as int;
-                    currentFrequency = lastInfo['frequency'] as String? ?? "1";
-                  }
-                  return Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            const Text(
-                              '設定金額',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 173),
-                            const Icon(
-                              Icons.attach_money,
-                              size: 24,
-                              color: Colors.blue, // お好きな色を選んでください
-                            ),
-                            Text(
-                              '$currentAmount',
-                              style: const TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 255, 0, 0),
-                              ),
-                            ),
-                            const Text(
-                              ' 円',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            const Text(
-                              '決済頻度',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 150),
-                            Text(
-                              currentFrequency,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: Color.fromARGB(255, 255, 0, 0),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      FutureBuilder<String>(
-                        future: fetchLastPaymentTimestamp(),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          } else if (snapshot.hasError) {
-                            return Text('Error: ${snapshot.error}');
-                          } else {
-                            final lastPaymentText =
-                                snapshot.data ?? 'まだ募金をしていません';
-                            return Padding(
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02),
+                        FutureBuilder<String>(
+                          future: fetchLastPaymentTimestamp(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            } else if (snapshot.hasError) {
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              final lastPaymentText =
+                                  snapshot.data ?? 'まだ募金をしていません';
+                              return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 16),
                                 child: Row(
                                   // mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Text(
+                                    Text(
                                       '最後に募金した日',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.03,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(width: 140),
+                                    SizedBox(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.42),
                                     Text(
                                       lastPaymentText,
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                      style: TextStyle(
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.03,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
-                                ));
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey),
-                          borderRadius: BorderRadius.circular(8),
+                                ),
+                              );
+                            }
+                          },
                         ),
-                        child: const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '・ 届いた通知を押すと、設定した金額を募金することができます',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(fontSize: 11),
-                            ),
-                            Text(
-                              '・ 設定した金額や頻度は設定画面より変更することができます',
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: TextStyle(fontSize: 11),
-                            ),
-                          ],
-                        ),
-                      )
-                    ],
-                  );
-                }
-              },
-            ),
-          ],
+                        SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.03),
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '・ 届いた通知を押すと、設定した金額を募金することができます',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width *
+                                            0.025),
+                              ),
+                              Text(
+                                '・ 設定した金額や頻度は設定画面より変更することができます',
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width *
+                                            0.025),
+                              ),
+                            ],
+                          ),
+                        )
+                      ],
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Footer(
