@@ -17,10 +17,17 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   int _selectedIndex = 2;
+  final amountProvider = AmountProvider();
   int _amount = 0;
   String _newFrequency = '指定なし';
   final dbInfo = DatabaseInformation.instance;
-  bool _isAmountValid = false;
+  bool _isAmountValid = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _amount = amountProvider.amount;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -47,6 +54,10 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   void _apply() async {
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
+    final frequencyProvider =
+        Provider.of<FrequencyProvider>(context, listen: false);
+
     Map<String, dynamic> infoData = {
       'timestamp': DateTime.now().toString(),
       'frequency': _newFrequency,
@@ -54,12 +65,20 @@ class _SettingsPageState extends State<SettingsPage> {
     };
     await DatabaseInformation.instance.insertInfo(infoData);
     setState(() {});
+
+    NotificationFrequency selectedFrequencyValue =
+        convertToNotificationFrequency(_newFrequency);
+
+    // 新しい頻度を設定
+    frequencyProvider.setSelectedFrequency(selectedFrequencyValue);
+
+    // 新しい金額を設定
+    amountProvider.setAmount(_amount);
   }
 
   @override
   Widget build(BuildContext context) {
-    final amountProvider = Provider.of<AmountProvider>(context);
-    final frequencyProvider = Provider.of<FrequencyProvider>(context);
+    final amountProvider = Provider.of<AmountProvider>(context, listen: false);
 
     final List<String> frequencyOptions = [
       '指定なし',
@@ -85,6 +104,30 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '・ 頻度だけの変更はできません。',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 11),
+                      ),
+                      Text(
+                        '・ 変更させる場合は金額とともに変更させる必要があります',
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
                 const Text(
                   '通知設定',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -93,18 +136,17 @@ class _SettingsPageState extends State<SettingsPage> {
                 Column(
                   children: [
                     const Text(
-                      '決済の頻度を選択してください:',
+                      '通知の頻度を選択してください:',
                       style: TextStyle(fontSize: 16),
                     ),
                     DropdownButton<String>(
                       value: _newFrequency,
                       onChanged: (newValue) {
+                        // ignore: unused_local_variable
                         NotificationFrequency selectedFrequencyValue =
                             convertToNotificationFrequency(newValue!);
                         setState(() {
                           _newFrequency = newValue;
-                          frequencyProvider
-                              .setSelectedFrequency(selectedFrequencyValue);
                         });
                       },
                       items: frequencyOptions
@@ -127,6 +169,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
+                    hintText: '${amountProvider.amount}',
                     prefixText: '¥',
                     suffixText: '円',
                     errorText: _isAmountValid ? null : '1円から100円までの整数を入力してください',
@@ -135,7 +178,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     final amount = int.tryParse(value);
                     setState(() {
                       if (value.isEmpty) {
-                        _isAmountValid = false;
+                        _isAmountValid = true;
+                        _updateAmount(amountProvider.amount);
                       } else if (amount != null &&
                           amount >= 1 &&
                           amount <= 100) {

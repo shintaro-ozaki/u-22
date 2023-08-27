@@ -45,14 +45,18 @@ class _AroundSpotPageState extends State<AroundSpotPage> {
     super.dispose();
   }
 
+  double getFontSize(double coefficient) {
+    return MediaQuery.of(context).size.width * coefficient;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
           centerTitle: true,
-          title: const Text(
+          title: Text(
             '周辺のスポット',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(fontSize: getFontSize(0.06)),
           ),
           backgroundColor: Colors.lightGreen),
       body: _makeGoogleMap(),

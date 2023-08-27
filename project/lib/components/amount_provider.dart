@@ -18,4 +18,9 @@ class AmountProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void setAmount(int newAmount) {
+    _amount = newAmount;
+    notifyListeners();
+  }
 }

@@ -51,7 +51,7 @@ class _Footer extends State<Footer> {
     //現在位置の変化を監視
     _locationChangedListen =
         _locationService.onLocationChanged.listen((LocationData result) async {
-      debugPrint(result.toString());
+      //debugPrint(result.toString());
       locationProvider.updateLocation(result);
       nowTime = DateTime.now();
       if (await checkFrequency()) {
@@ -127,7 +127,7 @@ class _Footer extends State<Footer> {
     // 位置情報判定
     for (Map location in locations) {
       if (arrived.containsKey(location['label'])) {
-        if (nowTime.difference(arrived[location['label']]!).inMinutes > 20) {
+        if (nowTime.difference(arrived[location['label']]!).inHours > 2) {
           arrived.remove(location['label']);
         } else {
           continue;
@@ -274,6 +274,9 @@ class _Footer extends State<Footer> {
       iconSize: 24,
       selectedFontSize: 15,
       unselectedFontSize: 10,
+      backgroundColor: const Color.fromARGB(255, 255, 236, 243),
+      selectedItemColor: Colors.black,
+      unselectedItemColor: Colors.grey,
     );
   }
 }

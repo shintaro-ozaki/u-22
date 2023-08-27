@@ -52,14 +52,20 @@ class _LockPageState extends State<LockPage> {
     super.dispose();
   }
 
+  double getFontSize(double coefficient) {
+    return MediaQuery.of(context).size.width * coefficient;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           centerTitle: true,
           backgroundColor: Colors.black,
-          title:
-              Text(widget.title, style: const TextStyle(color: Colors.white)),
+          title: Text(
+            widget.title,
+            style: TextStyle(color: Colors.white, fontSize: getFontSize(0.06)),
+          ),
         ),
         body: Column(
           children: [
@@ -80,6 +86,9 @@ class _LockPageState extends State<LockPage> {
                   : const Text('通知が許可されていません'),
               onChanged: (bool value) {},
             ),
+            const SizedBox(
+              height: 20,
+            ),
             ElevatedButton.icon(
               icon: const Icon(
                 Icons.settings,
@@ -94,18 +103,17 @@ class _LockPageState extends State<LockPage> {
                 openAppSettings();
               },
             ),
-            const Text('以下の画面のように設定してください'),
+            const SizedBox(
+              height: 20,
+            ),
+            const Text('以下のように設定してください'),
             ClipRRect(
-              borderRadius: BorderRadius.circular(150),
               child: Image.asset(
-                'assets/images/banner.jpg',
-                width: 200,
-                height: 200,
-                fit: BoxFit.cover,
+                'assets/images/setting.jpg',
+                width: 300,
+                height: 300,
               ),
             ),
-            const Text(
-                '※画像のように設定しても「位置情報が許可されていません」と出る場合は本体の位置情報サービスを確認してください'),
           ],
         ));
   }
