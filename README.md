@@ -1,4 +1,4 @@
-# u-22プログラミングコンテスト
+# u-22プログラミングコンテスト「TapNDonate」
 
 ## モバイルサイド
 ### 実行方法
@@ -6,6 +6,21 @@
 1. この`README.md`と同じ階層で`make all-start`
 
 
+<br /><br /><br />
+## バックエンドサイド
+バックエンドはサーバが動き続けているので, 何もしなくて良い
+### 実行方法
+
+1. `cp ./flask/.env.sample ./flask/.env`をして、API情報を入力
+2. `cd config`
+3. `make dcup`
+4. `make back`
+終了時は
+5. `make down`
+
+
+<br /><br /><br />
+# 補足説明
 ## PayPay Developerアカウントに関して
 [PayPayAPI](https://developer.paypay.ne.jp/)を使用して、dev用のアカウントを使用している。そのため、本コンテスト内で決済するには下記のアカウントが必要になる.
 
@@ -19,18 +34,3 @@
 - OTP: `1234`
 
 3. ログインが完了すればPayPayに関しては終了である. 通知を押せば, このアカウントに対して支払いが発生する.
-
-
-
-
-<br /><br /><br /><br /><br /><br />
--------------------- これより下記は実行しなくて良い-------------
-## バックエンド
-### 実行方法
-
-1. `cp ./flask/.env.sample ./flask/.env`をして、API情報を入力
-2. `cd config`
-3. `make dcup`
-4. `make back`
-終了時は
-5. `make down`
