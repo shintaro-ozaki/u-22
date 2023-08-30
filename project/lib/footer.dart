@@ -239,7 +239,7 @@ class _Footer extends State<Footer> {
       importance: Importance.max,
       priority: Priority.high,
       playSound: false,
-      timeoutAfter: 5000,
+      timeoutAfter: null,
       styleInformation: DefaultStyleInformation(true, true),
     );
 
