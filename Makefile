@@ -12,6 +12,7 @@ all-start:
 	cd project && \
 	cd ios && \
 	pod deintegrate && \
+	pod install && \
 	cd .. && \
 	flutter clean && \
 	flutter pub get && \

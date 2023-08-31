@@ -6,25 +6,24 @@
 
 <br />
 
-## U-22以外の実行方法(エミュレータ)
+## U-22以外の実行方法(iOSエミュレータ)
 
 ### モバイルサイド
 
-
-1. この`README.md`と同じ階層で`make all-start`
-
-
+1. Google Map APIを取得する([わかりやすいサイト](https://qiita.com/Haruka-Ogawa/items/997401a2edcd20e61037))
+2. project/ios/Runner/AppDelegate.swiftのYOURAPIKEYに自分のキーを入力する
+3. iOS SimulatorでiPhone14を起動
+4. この`README.md`と同じ階層で`make all-start`
 
 ### バックエンドサイド
-バックエンドは12月頃までサーバが動き続けているので, 以下はしなくて良い
 
+0. 12月頃までサーバが動き続けているので, 以下はしなくて良い
 1. `cp ./flask/.env.sample ./flask/.env`をして、API情報を入力
 2. `cd config`
 3. `make dcup`
 4. `make back`
 終了時は
 5. `make down`
-
 
 <br />
 
