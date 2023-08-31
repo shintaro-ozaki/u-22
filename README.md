@@ -1,4 +1,4 @@
-# U-22プログラミングコンテスト「TapNDonate」
+# U-22プログラミングコンテスト作品「TapNDonate」
 
 ## U-22向けの実行方法
 1. 事務局指定のストレージより実行ファイル一式を展開
@@ -10,8 +10,8 @@
 
 ### モバイルサイド
 
-1. Google Map APIを取得する([わかりやすいサイト](https://qiita.com/Haruka-Ogawa/items/997401a2edcd20e61037))
-2. project/ios/Runner/AppDelegate.swiftのYOURAPIKEYに自分のキーを入力する
+1. GoogleMapAPIを取得する([わかりやすい参考サイト様](https://qiita.com/Haruka-Ogawa/items/997401a2edcd20e61037))
+2. project/ios/Runner/AppDelegate.swiftのYOURAPIKEYに作成したAPIキーを入力する
 3. iOS SimulatorでiPhone14を起動
 4. この`README.md`と同じ階層で`make all-start`
 
